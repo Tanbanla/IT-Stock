@@ -79,8 +79,15 @@ struct LogInUIView: View {
                     }
                 }label: {
                     HStack{
-                        Text("Đăng nhập").bold()
-                            .font(.title3).foregroundColor(.white).padding()
+                        if loginController.isLoading {
+                            ProgressView()
+                                .tint(.white)
+                        } else {
+                            Text("Đăng nhập")
+                                .bold()
+                                .font(.title3)
+                                .foregroundColor(.white)
+                        }
                     }.frame(maxWidth: .infinity).frame(height: 50).background(Color.blue).cornerRadius(12).padding(.leading,30).padding(.trailing,30).padding(.top,20)
                 }
                 Spacer()
