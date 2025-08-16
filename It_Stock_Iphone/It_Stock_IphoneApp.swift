@@ -11,7 +11,7 @@ import SwiftUI
 struct It_Stock_IphoneApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            LogInUIView()
         }
     }
 }
