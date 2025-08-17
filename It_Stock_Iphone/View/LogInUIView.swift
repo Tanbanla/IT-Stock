@@ -8,10 +8,8 @@
 import SwiftUI
 
 struct LogInUIView: View {
-    @StateObject private var loginController = LoginController()
-    @State private var adid: String = ""
-    @State private var password: String  = ""
-    @State private var showEye: Bool = true
+    @StateObject private var viewModel = LoginViewModel()
+    @State private var showMainView = false
     var body: some View {
             VStack{
                 // view top
@@ -39,9 +37,9 @@ struct LogInUIView: View {
                         Spacer()
                     }
                     HStack{
-                        TextField("Nhập Adid", text: $adid).onChange(of: adid) { newValue in
+                        TextField("Nhập Adid", text: $viewModel.adid).onChange(of: viewModel.adid) { newValue in
                             let uppercasedValue = newValue.lowercased()
-                            adid = uppercasedValue
+                            viewModel.adid = uppercasedValue
                             
                         }.frame(height: 60).padding(.leading, 10).cornerRadius(12).overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray,lineWidth:1.0))
                     }
@@ -53,17 +51,17 @@ struct LogInUIView: View {
                     }
                     HStack{
                         HStack{
-                            if showEye{
-                                SecureField("Nhập mật khẩu", text: $password)
+                            if viewModel.showPassword{
+                                SecureField("Nhập mật khẩu", text: $viewModel.password)
                             }else{
-                                TextField("Nhập mật khẩu", text: $password)
+                                TextField("Nhập mật khẩu", text: $viewModel.password)
                             }
                             Button{
                                 withAnimation{
-                                    showEye.toggle()
+                                    viewModel.showPassword.toggle()
                                 }
                             }label: {
-                                Image(systemName: showEye ? "eye.slash" : "eye").resizable().frame(width: 26, height:20).padding(.trailing,8).foregroundStyle(Color.gray)
+                                Image(systemName: viewModel.showPassword ? "eye.slash" : "eye").resizable().frame(width: 26, height:20).padding(.trailing,8).foregroundStyle(Color.gray)
                             }
                         }.frame(height: 60).padding(.leading, 10).cornerRadius(12).overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray,lineWidth:1.0))
                     }
@@ -71,15 +69,10 @@ struct LogInUIView: View {
                 
                 // view bottom
                 Button{
-                    loginController.login(adid: adid, password: password) { success in
-                        if success {
-                            // Xử lý sau khi đăng nhập thành công
-                            print("Đăng nhập thành công: \(loginController.userData?.nvchR_NAME ?? "")")
-                        }
-                    }
+                    viewModel.login()
                 }label: {
                     HStack{
-                        if loginController.isLoading {
+                        if viewModel.isLoading {
                             ProgressView()
                                 .tint(.white)
                         } else {
@@ -92,12 +85,16 @@ struct LogInUIView: View {
                 }
                 Spacer()
                 Image("logo_company").resizable().frame(width: 300, height: 130)
-            }.alert(isPresented: $loginController.isLoggedIn) {
-                Alert(
-                    title: Text("Đăng nhập thành công"),
-                    message: Text("Xin chào \(loginController.userData?.nvchR_NAME ?? "")"),
-                    dismissButton: .default(Text("OK"))
-                )
+            }.fullScreenCover(isPresented: $showMainView) {
+                MainUIView() //$viewModel.isLoggedIn
+            }
+            .alert("Đăng nhập thành công",isPresented: $viewModel.isLoggedIn) {
+                Button("OK", role: .cancel) {
+                    // Điều hướng sang màn hình chính
+                    showMainView = true
+                }
+            } message: {
+                Text("Xin chào \(viewModel.currentUser?.nvchR_NAME ?? "")")
             }
     }
 }
