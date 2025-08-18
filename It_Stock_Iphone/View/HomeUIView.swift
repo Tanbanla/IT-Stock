@@ -11,13 +11,18 @@ struct HomeUIView: View {
     @EnvironmentObject var userDataManager: UserDataManager
     @State private var isShowIcon: Bool = true
     @StateObject private var factoryVM = FactoryViewModel()
+    @State private var factorySelect: String = ""
+    @State private var showMessage: Bool = false
+    @State private var showExportView = false
+    @State private var showImportView = false
+    @State private var showCheckView = false
     var body: some View {
         ScrollView{
             VStack{
                 HStack{
                     Spacer()
                     Button{
-                        
+
                     }label: {
                         HStack{
                             Image(systemName: "bell").resizable().frame(width: 28, height: 28).padding(12)
@@ -33,10 +38,10 @@ struct HomeUIView: View {
                         Image("woman")
                     }
                     VStack(alignment: .leading){
-//                        Text(userDataManager.currentUser?.nvchR_NAME ?? "Không xác định").font(.title2).bold().foregroundStyle(Color.blue)
-//                        Text(userDataManager.currentUser?.chR_COST_CENTER ?? "Không xác định").font(.title3).bold().foregroundStyle(Color.blue)
-                        Text("Không xác định").font(.title2).bold().foregroundStyle(Color.blue)
-                        Text("Không xác định").font(.title3).bold().foregroundStyle(Color.blue)
+                        Text(userDataManager.currentUser?.nvchR_NAME ?? "Không xác định").font(.title2).bold().foregroundStyle(Color.blue)
+                        Text(userDataManager.currentUser?.chR_COST_CENTER ?? "Không xác định").font(.title3).bold().foregroundStyle(Color.blue)
+//                        Text("Không xác định").font(.title2).bold().foregroundStyle(Color.blue)
+//                        Text("Không xác định").font(.title3).bold().foregroundStyle(Color.blue)
                         Spacer()
                     }
                     Spacer()
@@ -61,20 +66,11 @@ struct HomeUIView: View {
                         ProgressView()
                             .frame(width: 100, height: 20)
                     } else {
-//                        Picker("Chọn kho", selection: $factoryVM.selectedFactory) {
-//                            ForEach(factoryVM.factories, id: \.self) { factory in
-//                                Text(factory).tag(factory)
-//                            }
-//                        }
-//                        .pickerStyle(MenuPickerStyle())
-//                        .frame(width: 150, height: 30)
-//                        .background(Color.blue.opacity(0.8))
-//                        .cornerRadius(20)
-//                        .foregroundColor(.white)
                         Menu {
                             ForEach(factoryVM.factories, id: \.self) { factory in
                                 Button {
                                     factoryVM.selectedFactory = factory
+                                    factorySelect = factory
                                 } label: {
                                     Text(factory)
                                 }
@@ -86,7 +82,7 @@ struct HomeUIView: View {
                                 Image(systemName: "chevron.down")
                                     .foregroundColor(.white)
                             }.frame(minWidth: 130)
-                            .padding(.horizontal, 12)
+                            .padding(.horizontal, 20)
                             .padding(.vertical, 8)
                             .background(Color.blue.opacity(0.8))
                             .cornerRadius(10).shadow(radius: 3)
@@ -96,41 +92,65 @@ struct HomeUIView: View {
                 // button
                 
                 Button{
-                    
+                    if factorySelect != "" {
+                        showExportView.toggle()
+                    }else{
+                        showMessage = true
+                    }
                 }label: {
                     HStack{
-                        Image("xuat").resizable().frame(width: 60, height: 60).clipShape(Circle()).overlay(Circle().stroke(Color.gray, lineWidth: 2)).padding()
+                        Image("xuatkho").resizable().frame(width: 60, height: 60).clipShape(Circle()).overlay(Circle().stroke(Color.gray, lineWidth: 2)).padding()
                         VStack{
                             Text("XUẤT KHO - CHO MƯỢN").bold().font(.system(size: 13)).foregroundStyle(Color.blue).padding()
-                        }.frame(minWidth: 180).background(Color.white).cornerRadius(20).padding(.trailing, 8)
+                        }.frame(minWidth: 180).background(Color.white).cornerRadius(20).padding(.trailing, 8).shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: -5)
                     }.frame(maxWidth: .infinity).background(Color.purple.opacity(0.3)).cornerRadius(20)
+                }.fullScreenCover(isPresented: $showExportView) {
+                    XuatKhoUIView()
                 }
                 Button{
-                    
+                    if factorySelect != "" {
+                        showImportView.toggle()
+                    }else{
+                        showMessage = true
+                    }
                 }label: {
                     HStack{
-                        Image("nhap").resizable().frame(width: 60, height: 60).clipShape(Circle()).overlay(Circle().stroke(Color.gray, lineWidth: 2)).padding()
+                        Image("nhapkho").resizable().frame(width: 60, height: 60).clipShape(Circle()).overlay(Circle().stroke(Color.gray, lineWidth: 2)).padding()
                         VStack{
                             Text("NHẬP KHO TÁI SỬ DỤNG").bold().font(.system(size: 13)).foregroundStyle(Color.blue).padding()
                         }.frame(minWidth: 180).background(Color.white).cornerRadius(20).padding(.trailing, 8)
-                    }.frame(maxWidth: .infinity).background(Color.blue.opacity(0.3)).cornerRadius(20)
+                    }.frame(maxWidth: .infinity).background(Color.blue.opacity(0.3)).cornerRadius(20).shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: -5)
+                }.fullScreenCover(isPresented: $showImportView) {
+                    NhapKhoUIView(selectKho: factorySelect, section: "3510" //userDataManager.currentUser?.chR_COST_CENTER
+                    )
                 }
                 Button{
-                    
+                    if factorySelect != "" {
+                        showCheckView.toggle()
+                    }else{
+                        showMessage = true
+                    }
                 }label: {
                     HStack{
                         Image("scan_qr").resizable().frame(width: 60, height: 60).clipShape(Circle()).overlay(Circle().stroke(Color.gray, lineWidth: 2)).padding()
                         VStack{
                             Text("KIỂM KÊ").bold().font(.system(size: 13)).foregroundStyle(Color.blue).padding()
-                        }.frame(minWidth: 180).background(Color.white).cornerRadius(20).padding(.trailing, 8)
+                        }.frame(minWidth: 180).background(Color.white).cornerRadius(20).padding(.trailing, 8).shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: -5)
                     }.frame(maxWidth: .infinity).background(Color.green.opacity(0.3)).cornerRadius(20)
+                }.fullScreenCover(isPresented: $showCheckView) {
+                    KiemKeUIView()
                 }
-                
-                
             }.padding(.leading,20).padding(.trailing, 20).onAppear {
-//                if let section = userDataManager.currentUser?.chR_COST_CENTER {
-//                    factoryVM.fetchFactories(section: section)
-//                }
+                if let section = userDataManager.currentUser?.chR_COST_CENTER {
+                    factoryVM.fetchFactories(section: section)
+                }
+                //factoryVM.fetchFactories(section: "3510")
+            }.alert(isPresented: $showMessage) {
+                Alert(
+                    title: Text("Cảnh báo"),
+                    message: Text("Yêu cầu chọn nhà máy trước khi sử dụng!"),
+                    dismissButton: .default(Text("OK"))
+                )
             }
         }
     }

@@ -90,7 +90,6 @@ struct LogInUIView: View {
             }
             .alert("Đăng nhập thành công",isPresented: $viewModel.isLoggedIn) {
                 Button("OK", role: .cancel) {
-                    // Điều hướng sang màn hình chính
                     showMainView = true
                 }
             } message: {

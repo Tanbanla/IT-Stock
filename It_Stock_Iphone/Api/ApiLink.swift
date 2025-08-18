@@ -18,6 +18,50 @@ class ApiLink{
     var importUsedgood: String{
         return baseUrl + "DataInOut/import-used-goods";
     }
+    // insert in data into in out data table + update stock qty data into stock table
+
+//    TM_DATA_IN_OUTInfo inf = new TM_DATA_IN_OUTInfo();
+//
+//    inf.ID_GOODS =Convert.ToInt32( cboInputStockCategory.SelectedValue); // ID hàng
+//
+//    inf.NVCHR_ITEM_NAME = cboInputStockCategory.Text; // tên hàng (phân loại)
+//
+//    inf.CHR_NUM_REQUEST = null; // số Request
+//
+//    inf.CHR_NUM_PO = null; // số PO
+//
+//    //inf.CHR_KHO = "F1"; // vị trí kho
+//
+//    inf.CHR_KHO = cbo_Input_Stock.Text; // vị trí kho
+//
+//    inf.CHR_KIND_IN_OUT = "I"; // Nhập kho
+//
+//    inf.CHR_TYPE_GOODS = "R"; // Hàng tái sử dụng
+//
+//    inf.INT_QTY_IN_OUT = Convert.ToInt32(txtInputStockQty.Text); // số lượng nhập xuất
+//
+//    inf.INT_QTY_IN_STOCK = null;  // Không tính toán ở đây. Lấy dữ liệu từ kho xử lý trong StoreProcedure.
+//
+//    inf.DTM_DATE_IN_OUT = dtInputStockReUse.Value; // ngày nhập xuất
+//
+//    inf.CHR_PER_IT = Common.tmpUser.CHR_ADID; // người nhập xuất
+//
+//    inf.CHR_SECT = null; // phòng ban xuất
+//
+//    inf.CHR_PER_SECT = null; // Người phòng ban nhận
+//
+//    inf.CHR_CODE_PER_SECT = null; // mã nhân viên người phòng ban nhận
+//
+//    inf.NVCHR_EQUIP_NAME = null; // tên thiết bị
+//
+//    inf.NVCHR_REASON_IN_OUT = txtInputStockReson.Text; // lý do nhập xuất
+//
+//    inf.CHR_USER_UPDATE = Common.tmpUser.CHR_ADID;
+//
+//    inf.DTM_DATE_UPDATE = null; // Xử lý lấy Datetime trên server trong StoreProcedure
+//
+//    BUS_TM_DATA_IN_OUT.Instance().TM_DATA_IN_OUT_Insert_InsOrUpdTM_IT_KHO(inf);
+    
 //    {
 //      "id": 0,
 //      "iD_GOODS": 0,
@@ -80,18 +124,7 @@ class ApiLink{
     //get by section
     var getBySection: String{
         return baseUrl + "Factory/get-by-section-control"
-        //http://172.26.248.62:8502/api/Factory/get-by-section-control?sectionControl=3510
     }
-//    {
-//      "success": true,
-//      "status": 200,
-//      "message": null,
-//      "error": null,
-//      "data": [
-//        "BIVN-F1",
-//        "TTF-F1"
-//      ]
-//    }
     // get stock by section
     var getStockBySection: String{
         return baseUrl + "Factory/get-stock-by-section-control"
@@ -136,35 +169,38 @@ class ApiLink{
     var MasterGoodBySection: String{
         return baseUrl + "MasterGood/get-by-section-control"
     }
-//    {
-//      "success": true,
-//      "status": 200,
-//      "message": null,
-//      "error": null,
-//      "data": [http://172.26.248.62:8502/api/MasterGood/get-by-section-control?sectionControl=3510
-//        {
-//          "id": 358,
-//          "nvchR_ITEM_NAME": "1",
-//          "nvchR_PATH_IMAGE": null,
-//          "nvchR_PURPOSE": "1",
-//          "inT_MIN": 1,
-//          "inT_MAX": 2,
-//          "chR_USER_CREATE": "sonth",
-//          "dtM_DATE_CREATE": "2024-09-17T14:17:37.743",
-//          "chR_USER_UPDATE": "sonth",
-//          "dtM_DATE_UPDATE": "2024-09-17T14:29:12.153",
-//          "inT_FLAG_DELETE": 0,
-//          "nvchR_DONVI_TINH": "1",
-//          "chR_SEC_CONTROL": "3510    ",
-//          "chR_CODE_GOODS": "1"
-//        },
     var MasterByCode: String{
-        return baseUrl + "MasterGood/get-by-section-control"
-    }//code/kho
-    //userhttp://172.26.248.62:8502/api/User/get-employee-from-agentdb-by-adid?adid=khanhmf
-    var UserAdid: String{
-        return baseUrl + "User/get-employee-from-agentdb-by-adid"
+        return baseUrl + "MasterGood/get-by-code"
     }
+    //user
+    var UserBySystem: String{
+        return baseUrl + "User/get-by-adid"
+    }
+    //http://172.26.248.62:8502/api/User/get-by-adid?adid=khanhmf
+//    {
+//      "id": 56,
+//      "chR_USERID": "khanhmf",
+//      "chR_EMLPLOYEEID": "M0114622",
+//      "chR_ADID": "khanhmf",
+//      "nvchR_NAME": "Nguyễn Duy Khánh",
+//      "chR_PASS": "123456",
+//      "inT_USERID_COMMON": 0,
+//      "chR_SEC_CODE": "3500",
+//      "chR_EMAIL": "khanhmf@brothergroud.net",
+//      "dtM_LAST_LOGIN": null,
+//      "inT_LOCK": null,
+//      "chR_USER_CREATE": null,
+//      "dtM_DATE_CREATE": null,
+//      "chR_USER_UPDATE": null,
+//      "dtM_DATE_UPDATE": null,
+//      "chR_TELL": "2075",
+//      "inT_LOCK_DAY": 30,
+//      "chR_COST_CENTER": "3510"
+//    }
+    var UserAdidOrID: String{
+        return baseUrl + "User/get-employee-from-agentdb-by-adid-or-employee-id"
+    }
+    //http://172.26.248.62:8502/api/User/get-employee-from-agentdb-by-adid-or-employee-id?adidOrEmployeeId=M0114622
 //    {
 //      "success": true,
 //      "status": null,
@@ -174,15 +210,15 @@ class ApiLink{
 //        "id": 0,
 //        "chR_EMPLOYEE_ID": "M0114622",
 //        "chR_EMPLOYEE_NAME": "Nguyễn Duy Khánh",
-//        "chR_EMPLOYEE_ADID": null,
-//        "chR_EMPLOYEE_MAIL": null,
+//        "chR_EMPLOYEE_ADID": "khanhmf",
+//        "chR_EMPLOYEE_MAIL": "nguyenduy.khanh@brother-bivn.com.vn",
 //        "chR_POSITION": null,
 //        "chR_POSITION_GROUP": null,
 //        "chR_COMPANY": null,
 //        "chR_DEPT_GROUP": null,
 //        "chR_DEPT": null,
-//        "chR_SECTION": "3500 ",
-//        "chR_COST_CENTER": null,
+//        "chR_SECTION": "3500 : R&D-IT",
+//        "chR_COST_CENTER": "3510 : R&D-IT",
 //        "chR_GROUP": null,
 //        "dtM_JOIN_DATE": null,
 //        "dtM_LEAVE_DATE": null,

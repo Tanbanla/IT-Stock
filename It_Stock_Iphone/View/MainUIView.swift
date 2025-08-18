@@ -21,7 +21,6 @@ enum Tab: String, CaseIterable, Identifiable {
 }
 struct MainUIView: View {
     @State private var selectedTab: Tab = .home
-    @StateObject private var userDataManager = UserDataManager()
     var body: some View {
         ZStack(alignment: .bottom) {
             // Nội dung chính
@@ -51,6 +50,7 @@ struct MainUIView: View {
             .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: -5)
         }
         .ignoresSafeArea(.keyboard, edges: .bottom)
+        
     }
 }
 struct TabButton: View {
