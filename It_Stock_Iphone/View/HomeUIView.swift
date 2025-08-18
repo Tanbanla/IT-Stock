@@ -121,7 +121,7 @@ struct HomeUIView: View {
                         }.frame(minWidth: 180).background(Color.white).cornerRadius(20).padding(.trailing, 8)
                     }.frame(maxWidth: .infinity).background(Color.blue.opacity(0.3)).cornerRadius(20).shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: -5)
                 }.fullScreenCover(isPresented: $showImportView) {
-                    NhapKhoUIView(selectKho: factorySelect, section: "3510" //userDataManager.currentUser?.chR_COST_CENTER
+                    NhapKhoUIView(selectKho: factorySelect, section: "3510", adid: "khanhmf" //userDataManager.currentUser?.chR_COST_CENTER
                     )
                 }
                 Button{

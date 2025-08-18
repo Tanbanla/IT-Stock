@@ -10,6 +10,7 @@ class MasterGoodViewModel: ObservableObject{
     @Published var phanloai: [MasterGoodData]? = []
     @Published var data: MasterGoodData?
     @Published var isLoading: Bool = false
+    @Published var isSuccess: Bool = false
     @Published var errorMessage: String?
     
     
@@ -93,4 +94,56 @@ class MasterGoodViewModel: ObservableObject{
             .store(in: &cancellables)
     }
     // import thông tin nhập kho
-}
+    func importUsedGoods(request: ImportUsedGoodsRequest, completion: @escaping (Bool) -> Void) {
+            isLoading = true
+            errorMessage = nil
+            isSuccess = false
+            
+            guard let url = URL(string: ApiLink.shared.importUsedgood) else {
+                errorMessage = "URL không hợp lệ"
+                isLoading = false
+                completion(false)
+                return
+            }
+            if request.nvchR_REASON_IN_OUT == "" {
+                errorMessage = "Không được bỏ trống lý do"
+                isLoading = false
+                completion(false)
+                return
+            }
+            var urlRequest = URLRequest(url: url)
+            urlRequest.httpMethod = "POST"
+            urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            
+            do {
+                urlRequest.httpBody = try JSONEncoder().encode(request)
+            } catch {
+                errorMessage = "Lỗi khi tạo dữ liệu gửi đi"
+                isLoading = false
+                completion(false)
+                return
+            }
+            
+            URLSession.shared.dataTask(with: urlRequest) { [weak self] data, response, error in
+                DispatchQueue.main.async {
+                    self?.isLoading = false
+                    
+                    if let error = error {
+                        self?.errorMessage = error.localizedDescription
+                        completion(false)
+                        return
+                    }
+                    
+                    guard let httpResponse = response as? HTTPURLResponse,
+                          (200...299).contains(httpResponse.statusCode) else {
+                        self?.errorMessage = "Lỗi từ server"
+                        completion(false)
+                        return
+                    }
+                    
+                    self?.isSuccess = true
+                    completion(true)
+                }
+            }.resume()
+        }
+    }

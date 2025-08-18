@@ -10,6 +10,7 @@ import SwiftUI
 struct NhapKhoUIView: View {
     let selectKho: String
     let section: String
+    let adid: String
     @StateObject private var masterGoodVM = MasterGoodViewModel()
     @StateObject private var viewModel = BarcodeScannerViewModel()
     @State var currentDate:  String = ""
@@ -150,7 +151,7 @@ struct NhapKhoUIView: View {
                     }
                     //button
                     Button{
-                        
+                        submitImport()
                     }label: {
                         HStack{
                             Text("NHẬP KHO")
@@ -160,10 +161,63 @@ struct NhapKhoUIView: View {
                 }
             }
             Spacer()
-        }.padding(.horizontal, 20)
+        }.padding(.horizontal, 20).alert("Thành công", isPresented: $masterGoodVM.isSuccess) {
+            Button("OK") {
+                resetForm()
+            }
+        } message: {
+            Text("Nhập kho thành công")
+        }
+        .alert("Lỗi", isPresented: .constant(masterGoodVM.errorMessage != nil), actions: {
+            Button("OK") {
+                masterGoodVM.errorMessage = nil
+            }
+        }, message: {
+            Text(masterGoodVM.errorMessage ?? "")
+        })
     }
+    private func submitImport() {
+            
+           guard let quantity = Int(soLuong) else {
+               masterGoodVM.errorMessage = "Số lượng phải là số nguyên"
+               return
+           }
+        // Hàm chuyển đổi String -> Date
+        func convertStringToDate(dateString: String) -> Date? {
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "dd/MM/yyyy"
+            dateFormatter.timeZone = TimeZone(identifier: "UTC")
+            return dateFormatter.date(from: dateString)
+        }
+        
+        // Sử dụng
+        if let date = convertStringToDate(dateString: currentDate) {
+            let request = ImportUsedGoodsRequest(
+                itemName: phanLoai,
+                warehouse: selectKho,
+                quantity: quantity,
+                date: date, // Sử dụng kiểu Date
+                userId: adid,
+                reason: lyDo
+            )
+            masterGoodVM.importUsedGoods(request: request) { success in
+                   if success {
+                       resetForm()
+                   }
+               }
+        } else {
+            masterGoodVM.errorMessage = "Lỗi: Không thể chuyển đổi ngày tháng"
+            return
+        }
+       }
+       
+       private func resetForm() {
+           phanLoai = ""
+           soLuong = ""
+           lyDo = ""
+       }
 }
 
 #Preview {
-    NhapKhoUIView(selectKho: "Kho IT", section: "3510")
+    NhapKhoUIView(selectKho: "Kho IT", section: "3510",adid: "khanhmf")
 }
