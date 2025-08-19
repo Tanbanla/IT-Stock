@@ -16,147 +16,294 @@ struct HomeUIView: View {
     @State private var showExportView = false
     @State private var showImportView = false
     @State private var showCheckView = false
+    @StateObject private var xuatKhoVM = XuatKhoViewModel()
+    
     var body: some View {
-        ScrollView{
-            VStack{
-                HStack{
-                    Spacer()
-                    Button{
-
-                    }label: {
-                        HStack{
-                            Image(systemName: "bell").resizable().frame(width: 28, height: 28).padding(12)
-                        }
-                        .background(Color.blue.opacity(0.2)).cornerRadius(20)
+        ZStack {
+            // Background Gradient
+//            LinearGradient(
+//                colors: [Color.blue.opacity(0.05), Color.purple.opacity(0.03)],
+//                startPoint: .topLeading,
+//                endPoint: .bottomTrailing
+//            )
+//            .ignoresSafeArea()
+            
+            ScrollView {
+                VStack(spacing: 24) {
+                    // Header với notification
+                    headerView
+                    
+                    // User info card
+                    userInfoCard
+                    
+                    // Kho selection
+                    factorySelectionView
+                    
+                    // Action buttons
+                    actionButtonsSection
+                }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 16)
+            }
+        }
+        .alert(isPresented: $showMessage) {
+            Alert(
+                title: Text("Thông báo"),
+                message: Text("Vui lòng chọn kho trước khi thực hiện thao tác"),
+                dismissButton: .default(Text("Đã hiểu"))
+            )
+        }
+        .fullScreenCover(isPresented: $showExportView) {
+            XuatKhoUIView(listKho: xuatKhoVM.ListStock ?? [])
+                .onAppear {
+                    if xuatKhoVM.ListStock == nil {
+                        xuatKhoVM.getListFactory(section: "3510")
                     }
                 }
-                // thong tin user
-                HStack {
-                    if isShowIcon{
-                        Image("man")
-                    } else{
-                        Image("woman")
-                    }
-                    VStack(alignment: .leading){
-//                        Text(userDataManager.currentUser?.nvchR_NAME ?? "Không xác định").font(.title2).bold().foregroundStyle(Color.blue)
-//                        Text(userDataManager.currentUser?.chR_COST_CENTER ?? "Không xác định").font(.title3).bold().foregroundStyle(Color.blue)
-                        Text("Không xác định").font(.title2).bold().foregroundStyle(Color.blue)
-                        Text("Không xác định").font(.title3).bold().foregroundStyle(Color.blue)
-                        Spacer()
-                    }
-                    Spacer()
-                    Button{
-                        
-                    }label: {
-                        HStack(spacing: 1) {
-                            Text("Log Out").rotationEffect(.degrees(-90)).padding(.trailing, -20).font(.caption2)
-                            Image("logout")
-                        }
-                    }
-                }
-                // lich
+        }
+        .fullScreenCover(isPresented: $showImportView) {
+            NhapKhoUIView(selectKho: factorySelect, section: "3510", adid: "khanhmf")
+        }
+        .fullScreenCover(isPresented: $showCheckView) {
+            KiemKeUIView()
+        }
+        .onAppear {
+            //factoryVM.fetchFactories(section: "3510")
+        }
+    }
+    
+    // MARK: - Header View
+    private var headerView: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Xin chào!")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(.gray)
                 
-                //chọn kho
-                HStack{
-                    Text("Hãy chọn kho").bold().font(.system(size: 16)).foregroundStyle(Color.red)
-                    VStack {
-                        Image(systemName: "hand.tap").font(.system(size: 18)).foregroundStyle(Color.white).padding(3)
-                    }.background(Color.red.opacity(0.8)).cornerRadius(20)
-                    if factoryVM.isLoading {
-                        ProgressView()
-                            .frame(width: 100, height: 20)
-                    } else {
-                        Menu {
-                            ForEach(factoryVM.factories, id: \.self) { factory in
-                                Button {
-                                    factoryVM.selectedFactory = factory
-                                    factorySelect = factory
-                                } label: {
-                                    Text(factory)
-                                }
-                            }
-                        } label: {
-                            HStack {
-                                Text(factoryVM.selectedFactory.isEmpty ? "Chọn kho" : factoryVM.selectedFactory).bold()
-                                    .foregroundColor(.white)
-                                Image(systemName: "chevron.down")
-                                    .foregroundColor(.white)
-                            }.frame(minWidth: 130)
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 8)
-                            .background(Color.blue.opacity(0.8))
-                            .cornerRadius(10).shadow(radius: 3)
-                        }
-                    }
-                }
-                // button
-                
-                Button{
-                    if factorySelect != "" {
-                        showExportView.toggle()
-                    }else{
-                        showMessage = true
-                    }
-                }label: {
-                    HStack{
-                        Image("xuatkho").resizable().frame(width: 60, height: 60).clipShape(Circle()).overlay(Circle().stroke(Color.gray, lineWidth: 2)).padding()
-                        VStack{
-                            Text("XUẤT KHO - CHO MƯỢN").bold().font(.system(size: 13)).foregroundStyle(Color.blue).padding()
-                        }.frame(minWidth: 180).background(Color.white).cornerRadius(20).padding(.trailing, 8).shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: -5)
-                    }.frame(maxWidth: .infinity).background(Color.purple.opacity(0.3)).cornerRadius(20)
-                }.fullScreenCover(isPresented: $showExportView) {
-                    XuatKhoUIView()
-                }
-                Button{
-                    if factorySelect != "" {
-                        showImportView.toggle()
-                    }else{
-                        showMessage = true
-                    }
-                }label: {
-                    HStack{
-                        Image("nhapkho").resizable().frame(width: 60, height: 60).clipShape(Circle()).overlay(Circle().stroke(Color.gray, lineWidth: 2)).padding()
-                        VStack{
-                            Text("NHẬP KHO TÁI SỬ DỤNG").bold().font(.system(size: 13)).foregroundStyle(Color.blue).padding()
-                        }.frame(minWidth: 180).background(Color.white).cornerRadius(20).padding(.trailing, 8)
-                    }.frame(maxWidth: .infinity).background(Color.blue.opacity(0.3)).cornerRadius(20).shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: -5)
-                }.fullScreenCover(isPresented: $showImportView) {
-                    NhapKhoUIView(selectKho: factorySelect, section: "3510", adid: "khanhmf" //userDataManager.currentUser?.chR_COST_CENTER
-                                  //userDataManager.currentUser?.chR_ADID
+                Text("Quản lý kho")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundColor(.blue)
+            }
+            
+            Spacer()
+            
+            Button {
+                // Notification action
+            } label: {
+                Image(systemName: "bell.badge.fill")
+                    .font(.system(size: 20))
+                    .foregroundColor(.white)
+                    .frame(width: 44, height: 44)
+                    .background(
+                        LinearGradient(
+                            colors: [.blue, .purple],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
                     )
-                }
-                Button{
-                    if factorySelect != "" {
-                        showCheckView.toggle()
-                    }else{
-                        showMessage = true
-                    }
-                }label: {
-                    HStack{
-                        Image("scan_qr").resizable().frame(width: 60, height: 60).clipShape(Circle()).overlay(Circle().stroke(Color.gray, lineWidth: 2)).padding()
-                        VStack{
-                            Text("KIỂM KÊ").bold().font(.system(size: 13)).foregroundStyle(Color.blue).padding()
-                        }.frame(minWidth: 180).background(Color.white).cornerRadius(20).padding(.trailing, 8).shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: -5)
-                    }.frame(maxWidth: .infinity).background(Color.green.opacity(0.3)).cornerRadius(20)
-                }.fullScreenCover(isPresented: $showCheckView) {
-                    KiemKeUIView()
-                }
-            }.padding(.leading,20).padding(.trailing, 20).onAppear {
-//                if let section = userDataManager.currentUser?.chR_COST_CENTER {
-//                    factoryVM.fetchFactories(section: section)
-//                }
-                factoryVM.fetchFactories(section: "3510")
-            }.alert(isPresented: $showMessage) {
-                Alert(
-                    title: Text("Cảnh báo"),
-                    message: Text("Yêu cầu chọn nhà máy trước khi sử dụng!"),
-                    dismissButton: .default(Text("OK"))
-                )
+                    .clipShape(Circle())
+                    .shadow(color: Color.blue.opacity(0.3), radius: 5, x: 0, y: 3)
             }
         }
     }
+    
+    // MARK: - User Info Card
+    private var userInfoCard: some View {
+        HStack(spacing: 16) {
+            Image(isShowIcon ? "man" : "woman")
+                .resizable()
+                .scaledToFill()
+                .frame(width: 60, height: 60)
+                .clipShape(Circle())
+                .overlay(Circle().stroke(Color.blue.opacity(0.3), lineWidth: 2))
+                .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
+            
+            VStack(alignment: .leading, spacing: 4) {
+//                Text(userDataManager.currentUser?.nvchR_NAME ?? "Không xác định")
+//                    .font(.system(size: 18, weight: .bold))
+//                    .foregroundColor(.primary)
+//                
+//                Text(userDataManager.currentUser?.chR_COST_CENTER ?? "Không xác định")
+//                    .font(.system(size: 14, weight: .medium))
+//                    .foregroundColor(.blue)
+            }
+            
+            Spacer()
+            
+            Button {
+                // Logout action
+            } label: {
+                VStack(spacing: 2) {
+                    Image(systemName: "power")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(.red)
+                    
+                    Text("Log Out")
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(.red)
+                }
+                .padding(8)
+                .background(Color.red.opacity(0.1))
+                .cornerRadius(12)
+            }
+        }
+        .padding(16)
+        .background(Color.white)
+        .cornerRadius(20)
+        .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 5)
+    }
+    
+    // MARK: - Factory Selection
+    private var factorySelectionView: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                Image(systemName: "building.2.fill")
+                    .foregroundColor(.red)
+                    .font(.system(size: 16))
+                
+                Text("Chọn kho làm việc")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.primary)
+                
+                Text("*")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.red)
+            }
+            
+            if factoryVM.isLoading {
+                HStack {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: .blue))
+                    Text("Đang tải danh sách kho...")
+                        .font(.system(size: 14))
+                        .foregroundColor(.gray)
+                }
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.blue.opacity(0.1))
+                .cornerRadius(12)
+            } else {
+                Menu {
+                    ForEach(factoryVM.factories, id: \.self) { factory in
+                        Button {
+                            factoryVM.selectedFactory = factory
+                            factorySelect = factory
+                        } label: {
+                            HStack {
+                                Text(factory)
+                                if factory == factoryVM.selectedFactory {
+                                    Image(systemName: "checkmark")
+                                        .foregroundColor(.blue)
+                                }
+                            }
+                        }
+                    }
+                } label: {
+                    HStack {
+                        Image(systemName: "building.2")
+                            .foregroundColor(.blue)
+                        
+                        Text(factoryVM.selectedFactory.isEmpty ? "Chọn kho" : factoryVM.selectedFactory)
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(factoryVM.selectedFactory.isEmpty ? .gray : .primary)
+                        
+                        Spacer()
+                        
+                        Image(systemName: "chevron.down")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.blue)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 14)
+                    .background(Color.blue.opacity(0.08))
+                    .cornerRadius(12)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.blue.opacity(0.3), lineWidth: 1)
+                    )
+                }
+            }
+        }
+    }
+    
+    // MARK: - Action Buttons
+    private var actionButtonsSection: some View {
+        VStack(spacing: 16) {
+            actionButton(
+                icon: "xuatkho",
+                title: "XUẤT KHO - CHO MƯỢN",
+                color: Color.purple,
+                action: {
+                    if factorySelect != "" {
+                        showExportView.toggle()
+                    } else {
+                        showMessage = true
+                    }
+                }
+            )
+            
+            actionButton(
+                icon: "nhapkho",
+                title: "NHẬP KHO TÁI SỬ DỤNG",
+                color: Color.blue,
+                action: {
+                    if factorySelect != "" {
+                        showImportView.toggle()
+                    } else {
+                        showMessage = true
+                    }
+                }
+            )
+            
+            actionButton(
+                icon: "scan_qr",
+                title: "KIỂM KÊ",
+                color: Color.green,
+                action: {
+                    showCheckView.toggle()
+                }
+            )
+        }
+    }
+    
+    private func actionButton(icon: String, title: String, color: Color, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                Image(icon)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 50, height: 50)
+                    .clipShape(Circle())
+                    .overlay(Circle().stroke(Color.white, lineWidth: 2))
+                    .shadow(color: color.opacity(0.5), radius: 5, x: 0, y: 2)
+                
+                Text(title)
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.leading)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.8)
+                
+                Spacer()
+                
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(.white)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 20)
+            .background(
+                LinearGradient(
+                    colors: [color, color.opacity(0.8)],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+            )
+            .cornerRadius(20)
+            .shadow(color: color.opacity(0.4), radius: 8, x: 0, y: 4)
+        }
+    }
 }
-
 #Preview {
     HomeUIView()
 }

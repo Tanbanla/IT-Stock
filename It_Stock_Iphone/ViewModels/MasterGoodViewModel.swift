@@ -55,7 +55,7 @@ class MasterGoodViewModel: ObservableObject{
             .store(in: &cancellables)
     }
     // lấy thông tin khi quét mã
-    func getMasterByCode(stockName: String, code: String){
+    func getMasterByCode(stockName: String, code: String,completion: @escaping () -> Void){
         isLoading = true
         errorMessage = nil
        let code = "DV-HVT01"

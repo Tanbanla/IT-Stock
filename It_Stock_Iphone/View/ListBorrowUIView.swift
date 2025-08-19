@@ -13,7 +13,9 @@ struct ListBorrowUIView: View {
         ScrollView{
             VStack{
                 VStack{
-                    Text("DANH SÁCH CHO MƯỢN").bold().font(.headline).foregroundStyle(Color.blue).padding()
+                    Text("DANH SÁCH CHO MƯỢN")
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundColor(.blue)
                 }
                 HStack {
                     SearchBar1(text: $searchText)
