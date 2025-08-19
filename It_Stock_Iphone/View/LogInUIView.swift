@@ -11,6 +11,7 @@ struct LogInUIView: View {
     @StateObject private var viewModel = LoginViewModel()
     @State private var showMainView = false
     var body: some View {
+        ZStack {
             VStack{
                 // view top
                 Text("Welcome To").font(.title3).bold().foregroundStyle(Color.blue.opacity(0.7)).padding()
@@ -42,7 +43,7 @@ struct LogInUIView: View {
                             viewModel.adid = uppercasedValue
                             
                         }.frame(height: 60).padding(.leading, 10).cornerRadius(12).overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray,lineWidth:1.0))
-                    }
+                    }.background(Color.white)
                 }.padding(.leading, 30).padding(.trailing, 30).padding(.bottom)
                 VStack(alignment: .leading, spacing: 4){
                     HStack {
@@ -63,7 +64,7 @@ struct LogInUIView: View {
                             }label: {
                                 Image(systemName: viewModel.showPassword ? "eye.slash" : "eye").resizable().frame(width: 26, height:20).padding(.trailing,8).foregroundStyle(Color.gray)
                             }
-                        }.frame(height: 60).padding(.leading, 10).cornerRadius(12).overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray,lineWidth:1.0))
+                        }.frame(height: 60).padding(.leading, 10).cornerRadius(12).overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray,lineWidth:1.0)).background(Color.white)
                     }
                 }.padding(.leading, 30).padding(.trailing, 30)
                 
@@ -92,9 +93,14 @@ struct LogInUIView: View {
                 Button("OK", role: .cancel) {
                     showMainView = true
                 }
-            } message: {
+            }message: {
                 Text("Xin chào \(viewModel.currentUser?.nvchR_NAME ?? "")")
             }
+        }.background(
+            Image("background")
+                .resizable()
+                .scaledToFill()
+        )
     }
 }
 

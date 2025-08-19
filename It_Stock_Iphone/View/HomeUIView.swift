@@ -38,10 +38,10 @@ struct HomeUIView: View {
                         Image("woman")
                     }
                     VStack(alignment: .leading){
-                        Text(userDataManager.currentUser?.nvchR_NAME ?? "Không xác định").font(.title2).bold().foregroundStyle(Color.blue)
-                        Text(userDataManager.currentUser?.chR_COST_CENTER ?? "Không xác định").font(.title3).bold().foregroundStyle(Color.blue)
-//                        Text("Không xác định").font(.title2).bold().foregroundStyle(Color.blue)
-//                        Text("Không xác định").font(.title3).bold().foregroundStyle(Color.blue)
+//                        Text(userDataManager.currentUser?.nvchR_NAME ?? "Không xác định").font(.title2).bold().foregroundStyle(Color.blue)
+//                        Text(userDataManager.currentUser?.chR_COST_CENTER ?? "Không xác định").font(.title3).bold().foregroundStyle(Color.blue)
+                        Text("Không xác định").font(.title2).bold().foregroundStyle(Color.blue)
+                        Text("Không xác định").font(.title3).bold().foregroundStyle(Color.blue)
                         Spacer()
                     }
                     Spacer()
@@ -122,6 +122,7 @@ struct HomeUIView: View {
                     }.frame(maxWidth: .infinity).background(Color.blue.opacity(0.3)).cornerRadius(20).shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: -5)
                 }.fullScreenCover(isPresented: $showImportView) {
                     NhapKhoUIView(selectKho: factorySelect, section: "3510", adid: "khanhmf" //userDataManager.currentUser?.chR_COST_CENTER
+                                  //userDataManager.currentUser?.chR_ADID
                     )
                 }
                 Button{
@@ -141,10 +142,10 @@ struct HomeUIView: View {
                     KiemKeUIView()
                 }
             }.padding(.leading,20).padding(.trailing, 20).onAppear {
-                if let section = userDataManager.currentUser?.chR_COST_CENTER {
-                    factoryVM.fetchFactories(section: section)
-                }
-                //factoryVM.fetchFactories(section: "3510")
+//                if let section = userDataManager.currentUser?.chR_COST_CENTER {
+//                    factoryVM.fetchFactories(section: section)
+//                }
+                factoryVM.fetchFactories(section: "3510")
             }.alert(isPresented: $showMessage) {
                 Alert(
                     title: Text("Cảnh báo"),
