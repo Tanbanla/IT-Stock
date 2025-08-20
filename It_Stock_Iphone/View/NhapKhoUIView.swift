@@ -21,6 +21,8 @@ struct NhapKhoUIView: View {
     @State private var lyDo: String = ""
     @State private var showScran: Bool = false
     @State private var isLoading: Bool = false
+    @State private var idGood: Int = 0
+    
     
     @Environment(\.dismiss) private var dismiss
     
@@ -76,6 +78,7 @@ struct NhapKhoUIView: View {
         }
         .sheet(isPresented: $showScran) {
             BarcodeScannerView(viewModel: viewModel) { code in
+                showScran = false
                 handleBarcodeScanned(code: code)
             }
         }
@@ -144,7 +147,8 @@ struct NhapKhoUIView: View {
                         .font(.system(size: 22))
                         .foregroundColor(.white)
                         .frame(width: 50, height: 50)
-                        .background(LinearGradient(colors: [.blue, .purple], startPoint: .topLeading, endPoint: .bottomTrailing))
+                        //.background(LinearGradient(colors: [.blue, .purple], startPoint: .topLeading, endPoint: .bottomTrailing))
+                        .background(Color.blue)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
             }
@@ -287,13 +291,7 @@ struct NhapKhoUIView: View {
         }
         .frame(maxWidth: .infinity)
         .frame(height: 56)
-        .background(
-            LinearGradient(
-                colors: [.blue, .purple],
-                startPoint: .leading,
-                endPoint: .trailing
-            )
-        )
+        .background(Color.blue)
         .cornerRadius(16)
         .shadow(color: Color.blue.opacity(0.3), radius: 8, x: 0, y: 4)
         .disabled(isLoading)
@@ -302,10 +300,11 @@ struct NhapKhoUIView: View {
     // MARK: - Helper Functions
     private func handleBarcodeScanned(code: String) {
         isLoading = true
-        masterGoodVM.getMasterByCode(stockName: selectKho, code: code) {
+        masterGoodVM.getMasterByCode(stockName: selectKho, code: code) {_ in 
             DispatchQueue.main.async {
                 self.isLoading = false
                 self.phanLoai = self.masterGoodVM.data?.nvchR_ITEM_NAME ?? code
+                self.idGood = self.masterGoodVM.data?.id ?? 0
             }
         }
     }
@@ -344,6 +343,7 @@ struct NhapKhoUIView: View {
         }
         
         let request = ImportUsedGoodsRequest(
+            itemId: idGood,
             itemName: phanLoai,
             warehouse: selectKho,
             quantity: quantity,

@@ -12,15 +12,18 @@ struct XuatKhoUIView: View {
     @EnvironmentObject var userDataManager: UserDataManager
     @State private var currentDate: String = ""
     @State private var lyDo: String = ""
+    
     @State private var showScran: Bool = false
+    @State private var ScranEmployee: Bool = false
     @State private var isLoading: Bool = false
-    @State private var soLuongXuat: String = ""
-    @State private var soDienThoai: String = ""
-    @State private var tenNhanVien: String = ""
-    @State private var soLuongTon: String = "0"
+    // Hiển thị lịch
+    @State private var formattedDate: String = ""
+    @State private var selectedDate = Date()
+    @State private var showCanlender: Bool = false
     
     @Environment(\.dismiss) private var dismiss
     let listKho: [FactoryData]?
+    let selectKho: String
     
     var body: some View {
         ZStack {
@@ -76,6 +79,7 @@ struct XuatKhoUIView: View {
         }
         .sheet(isPresented: $showScran) {
             BarcodeScannerView(viewModel: viewModel) { code in
+                showScran = false
                 handleBarcodeScanned(code: code)
             }
         }
@@ -177,6 +181,7 @@ struct XuatKhoUIView: View {
                 
                 Button {
                     withAnimation {
+                        ScranEmployee = false
                         showScran = true
                     }
                 } label: {
@@ -184,7 +189,8 @@ struct XuatKhoUIView: View {
                         .font(.system(size: 22))
                         .foregroundColor(.white)
                         .frame(width: 50, height: 50)
-                        .background(LinearGradient(colors: [.blue, .purple], startPoint: .topLeading, endPoint: .bottomTrailing))
+                        //.background(LinearGradient(colors: [.blue, .purple], startPoint: .topLeading, endPoint: .bottomTrailing))
+                        .background(Color.blue)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
             }
@@ -202,41 +208,22 @@ struct XuatKhoUIView: View {
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.red)
             }
-            
             Menu {
-                //                                    if let listStock = listKho{
-                //                                        ForEach(listStock, id: \.self) { khoNhan in
-                //                                            Button {
-                //                                                xuatKhoVM.khoNhan = khoNhan
-                //                                            } label: {
-                //                                                Text(khoNhan.chR_FACTORY ?? "Không có tên") // Hiển thị tên kho
-                //                                            }
-                //                                        }
-                //                                    } else {
-                //                                        // Hiển thị khi đang loading hoặc không có data
-                //                                        if xuatKhoVM.isLoading {
-                //                                            ProgressView()
-                //                                        } else {
-                //                                            Text("Không có dữ liệu kho")
-                //                                                .foregroundColor(.gray)
-                //                                        }
-                //                                    }
-                
-                //                                    ForEach(listKho ?? [], id: \.self) { khoNhan in
-                //                                        Button {
-                //                                            xuatKhoVM.khoNhan = khoNhan.chR_STOCK_NAME
-                //                                        } label: {
-                //                                            Text(khoNhan.chR_STOCK_NAME)
-                //                                        }
-                //                                    }
+                ForEach(listKho ?? [], id: \.self.chR_STOCK_NAME) { khoNhan in
+                    Button {
+                        xuatKhoVM.khoNhan = khoNhan.chR_STOCK_NAME
+                    } label: {
+                        Text(khoNhan.chR_STOCK_NAME)
+                    }
+                }
             } label: {
                 HStack {
                     Image(systemName: "building.2")
                         .foregroundColor(.blue)
                     
-                    Text(xuatKhoVM.LoaiHang.isEmpty ? "Chọn kho nhận" : xuatKhoVM.LoaiHang)
+                    Text(xuatKhoVM.khoNhan.isEmpty ? "Chọn kho nhận" : xuatKhoVM.khoNhan)
                         .font(.system(size: 16))
-                        .foregroundColor(xuatKhoVM.LoaiHang.isEmpty ? .gray : .primary)
+                        .foregroundColor(xuatKhoVM.khoNhan.isEmpty ? .gray : .primary)
                     
                     Spacer()
                     
@@ -315,7 +302,7 @@ struct XuatKhoUIView: View {
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.blue)
                 
-                Text(soLuongTon)
+                Text("\(xuatKhoVM.slTon)").frame(width: 120, alignment: .leading)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 12)
                     .background(Color.blue.opacity(0.08))
@@ -325,7 +312,7 @@ struct XuatKhoUIView: View {
                             .stroke(Color.blue.opacity(0.2), lineWidth: 1)
                     )
             }
-            
+
             // Số lượng xuất
             VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 4) {
@@ -337,7 +324,7 @@ struct XuatKhoUIView: View {
                         .foregroundColor(.red)
                 }
                 
-                TextField("0", text: $soLuongXuat)
+                TextField("0", text: $xuatKhoVM.slXuat).frame(width: 120)
                     .keyboardType(.numberPad)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 12)
@@ -348,6 +335,7 @@ struct XuatKhoUIView: View {
                             .stroke(Color.blue.opacity(0.2), lineWidth: 1)
                     )
             }
+            Spacer()
         }
     }
     
@@ -375,7 +363,6 @@ struct XuatKhoUIView: View {
                             .stroke(Color.blue.opacity(0.2), lineWidth: 1)
                     )
             }
-            Spacer()
             // Ngày dự trả
             VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 4) {
@@ -386,17 +373,31 @@ struct XuatKhoUIView: View {
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(.red)
                 }
-                
-                Text(currentDate).frame(width: 120)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 12)
-                    .background(Color.blue.opacity(0.08))
-                    .cornerRadius(10)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.blue.opacity(0.2), lineWidth: 1)
+                Button(action: {
+                    showCanlender.toggle()
+                }) {
+                    Text("\(formattedDate)").frame(minWidth: 120, minHeight: 20)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 12)
+                        .background(Color.blue.opacity(0.08))
+                        .cornerRadius(10)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.blue.opacity(0.2), lineWidth: 1)
+                        )
+                }
+                .sheet(isPresented: $showCanlender) {
+                    CustomDatePickerSheet(
+                        selectedDate: $selectedDate,
+                        formattedDate: $formattedDate,
+                        isPresented: $showCanlender
                     )
+                    
+                }.onAppear{
+                    xuatKhoVM.NgayTra = formattedDate
+                }
             }
+            Spacer()
         }
     }
     
@@ -422,6 +423,7 @@ struct XuatKhoUIView: View {
                 
                 Button {
                     withAnimation {
+                        ScranEmployee = true
                         showScran = true
                     }
                 } label: {
@@ -429,7 +431,7 @@ struct XuatKhoUIView: View {
                         .font(.system(size: 20))
                         .foregroundColor(.white)
                         .frame(width: 44, height: 44)
-                        .background(LinearGradient(colors: [.blue, .purple], startPoint: .topLeading, endPoint: .bottomTrailing))
+                        .background(Color.blue)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
             }
@@ -441,7 +443,7 @@ struct XuatKhoUIView: View {
                     .foregroundColor(.blue)
                     .frame(width: 65, alignment: .leading)
                 
-                TextField("Tên nhân viên", text: $tenNhanVien)
+                TextField("Tên nhân viên", text: $xuatKhoVM.TenNv)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 14)
                     .background(Color.blue.opacity(0.08))
@@ -463,7 +465,7 @@ struct XuatKhoUIView: View {
                         .foregroundColor(.red)
                 }
                 
-                TextField("Số điện thoại", text: $soDienThoai)
+                TextField("Số điện thoại", text: $xuatKhoVM.SDT)
                     .keyboardType(.phonePad)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 14)
@@ -535,22 +537,85 @@ struct XuatKhoUIView: View {
         }
         .frame(maxWidth: .infinity)
         .frame(height: 56)
-        .background(
-            LinearGradient(
-                colors: [.blue, .purple],
-                startPoint: .leading,
-                endPoint: .trailing
-            )
-        )
+        .background(Color.blue)
         .cornerRadius(16)
         .shadow(color: Color.blue.opacity(0.3), radius: 8, x: 0, y: 4)
         .disabled(isLoading)
     }
-    
+    //MARK: - Custom select time
+    // Custom sheet view for date picker
+    struct CustomDatePickerSheet: View {
+        @Binding var selectedDate: Date
+        @Binding var formattedDate: String
+        @Binding var isPresented: Bool
+
+        var body: some View {
+            VStack {
+                // Title
+                Text("Chọn ngày trả")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .padding()
+
+                // DatePicker with GraphicalDatePickerStyle for a better appearance
+                DatePicker(
+                    "Select a date",
+                    selection: $selectedDate,
+                    displayedComponents: [.date]
+                )
+                .datePickerStyle(GraphicalDatePickerStyle())
+                .labelsHidden()
+                .padding()
+
+                // "Done" button
+                Button(action: {
+                    formattedDate = formatDate(selectedDate)
+                    isPresented = false
+                }) {
+                    Text("Xong")
+                        .font(.headline)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                }
+                .padding()
+            }
+            .background(Color.white)
+            .cornerRadius(20)
+            .padding()
+        }
+
+        // Function to format the date as "yyyy-MM-dd"
+        private func formatDate(_ date: Date) -> String {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "dd/MM/yyyy"
+            return formatter.string(from: date)
+        }
+    }
     // MARK: - Helper Functions
     private func handleBarcodeScanned(code: String) {
         // Handle barcode scanning logic
-        xuatKhoVM.phanLoai = code
+        if ScranEmployee{
+            //xuatKhoVM.MaNv = code
+            xuatKhoVM.getUserInforData(employeeID: code) {_ in
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                    xuatKhoVM.MaNv = self.xuatKhoVM.dataUser?.chR_EMPLOYEE_ID ?? code
+                    xuatKhoVM.TenNv = self.xuatKhoVM.dataUser?.chR_EMPLOYEE_NAME ?? "Không xác định"
+                    xuatKhoVM.SDT = self.xuatKhoVM.dataUser?.chR_PHONE_NO ?? "Không có trên hệ thống"
+                }
+            }
+        }else{
+            //xuatKhoVM.phanLoai = code
+            xuatKhoVM.getPhanLoaiAPI(stockName: selectKho, code: code) {_ in 
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                    xuatKhoVM.phanLoai = self.xuatKhoVM.data?.nvchR_ITEM_NAME ?? code
+                }
+            }
+        }
     }
     
     private func setupInitialDate() {
@@ -577,12 +642,22 @@ struct XuatKhoUIView: View {
             return
         }
         
-        guard let quantity = Int(soLuongXuat), quantity > 0 else {
+        guard let quantity = Int(xuatKhoVM.slXuat), quantity > 0 else {
             xuatKhoVM.errorMessage = "Số lượng xuất phải là số nguyên dương"
             return
         }
+        guard let ton = Int(xuatKhoVM.slTon) else {
+            xuatKhoVM.errorMessage = "Giá trị nhập không hợp lệ"
+            return
+        }
+
+        let total = ton - quantity
+        guard total < 0 else {
+            xuatKhoVM.errorMessage = "Số lượng xuất vượt quá số lượng tồn"
+            return
+        }
         
-        guard !soDienThoai.isEmpty else {
+        guard !xuatKhoVM.SDT.isEmpty else {
             xuatKhoVM.errorMessage = "Vui lòng nhập số điện thoại liên hệ"
             return
         }
@@ -597,5 +672,5 @@ struct XuatKhoUIView: View {
     }
 }
 #Preview {
-    XuatKhoUIView(listKho: nil)
+    XuatKhoUIView(listKho: nil, selectKho: "BIVN-F1")
 }

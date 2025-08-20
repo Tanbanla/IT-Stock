@@ -20,14 +20,6 @@ struct HomeUIView: View {
     
     var body: some View {
         ZStack {
-            // Background Gradient
-//            LinearGradient(
-//                colors: [Color.blue.opacity(0.05), Color.purple.opacity(0.03)],
-//                startPoint: .topLeading,
-//                endPoint: .bottomTrailing
-//            )
-//            .ignoresSafeArea()
-            
             ScrollView {
                 VStack(spacing: 24) {
                     // Header với notification
@@ -54,11 +46,9 @@ struct HomeUIView: View {
             )
         }
         .fullScreenCover(isPresented: $showExportView) {
-            XuatKhoUIView(listKho: xuatKhoVM.ListStock ?? [])
+            XuatKhoUIView(listKho: xuatKhoVM.ListStock ?? [], selectKho: factorySelect)
                 .onAppear {
-                    if xuatKhoVM.ListStock == nil {
                         xuatKhoVM.getListFactory(section: "3510")
-                    }
                 }
         }
         .fullScreenCover(isPresented: $showImportView) {
@@ -68,7 +58,8 @@ struct HomeUIView: View {
             KiemKeUIView()
         }
         .onAppear {
-            //factoryVM.fetchFactories(section: "3510")
+            //userDataManager.currentUser?.chR_COST_CENTER 
+            factoryVM.fetchFactories(section: "3510")
         }
     }
     
@@ -94,13 +85,14 @@ struct HomeUIView: View {
                     .font(.system(size: 20))
                     .foregroundColor(.white)
                     .frame(width: 44, height: 44)
-                    .background(
-                        LinearGradient(
-                            colors: [.blue, .purple],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+//                    .background(
+//                        LinearGradient(
+//                            colors: [.blue, .purple],
+//                            startPoint: .topLeading,
+//                            endPoint: .bottomTrailing
+//                        )
+//                    )
+                    .background(Color.blue)
                     .clipShape(Circle())
                     .shadow(color: Color.blue.opacity(0.3), radius: 5, x: 0, y: 3)
             }
@@ -232,7 +224,7 @@ struct HomeUIView: View {
             actionButton(
                 icon: "xuatkho",
                 title: "XUẤT KHO - CHO MƯỢN",
-                color: Color.purple,
+                color: Color.blue,
                 action: {
                     if factorySelect != "" {
                         showExportView.toggle()
@@ -258,9 +250,13 @@ struct HomeUIView: View {
             actionButton(
                 icon: "scan_qr",
                 title: "KIỂM KÊ",
-                color: Color.green,
+                color: Color.blue,
                 action: {
-                    showCheckView.toggle()
+                    if factorySelect != "" {
+                        showImportView.toggle()
+                    } else {
+                        showCheckView = true
+                    }
                 }
             )
         }

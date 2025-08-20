@@ -124,7 +124,8 @@ struct KiemKeUIView: View {
                         .font(.system(size: 22))
                         .foregroundColor(.white)
                         .frame(width: 50, height: 50)
-                        .background(LinearGradient(colors: [.blue, .purple], startPoint: .topLeading, endPoint: .bottomTrailing))
+                        //.background(LinearGradient(colors: [.blue, .purple], startPoint: .topLeading, endPoint: .bottomTrailing))
+                        .background(Color.blue)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
             }
@@ -179,7 +180,7 @@ struct KiemKeUIView: View {
     private var quantitySection: some View {
         HStack(spacing: 16) {
             // Max Quantity
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .center, spacing: 8) {
                 Text("SL Max")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.blue)
@@ -197,7 +198,7 @@ struct KiemKeUIView: View {
             }
             
             // Min Quantity
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .center, spacing: 8) {
                 Text("SL Min")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.blue)
@@ -215,7 +216,7 @@ struct KiemKeUIView: View {
             }
             
             // Tồn kho
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .center, spacing: 8) {
                 Text("Tồn kho")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.blue)
@@ -233,7 +234,7 @@ struct KiemKeUIView: View {
             }
             
             // Kiểm kê
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .center, spacing: 8) {
                 HStack(spacing: 2) {
                     Text("Kiểm kê")
                         .font(.system(size: 14, weight: .semibold))
@@ -326,13 +327,14 @@ struct KiemKeUIView: View {
             }
             .frame(maxWidth: .infinity)
             .frame(height: 56)
-            .background(
-                LinearGradient(
-                    colors: [.blue, .purple],
-                    startPoint: .leading,
-                    endPoint: .trailing
-                )
-            )
+//            .background(
+//                LinearGradient(
+//                    colors: [.blue, .purple],
+//                    startPoint: .leading,
+//                    endPoint: .trailing
+//                )
+//            )
+            .background(Color.blue)
             .cornerRadius(16)
             .shadow(color: Color.blue.opacity(0.3), radius: 8, x: 0, y: 4)
         }
