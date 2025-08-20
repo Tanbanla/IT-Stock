@@ -27,10 +27,6 @@ struct XuatKhoUIView: View {
     
     var body: some View {
         ZStack {
-            // Background
-            Color(.systemGroupedBackground)
-                .ignoresSafeArea()
-            
             VStack(spacing: 0) {
                 // Header
                 headerView
@@ -420,6 +416,17 @@ struct XuatKhoUIView: View {
                         RoundedRectangle(cornerRadius: 12)
                             .stroke(Color.blue.opacity(0.2), lineWidth: 1)
                     )
+                    .onChange(of: xuatKhoVM.MaNv) { newValue in
+                        if !newValue.isEmpty && newValue.count >= 8 {
+                            fetchEmployeeInfo(employeeID: newValue)
+                        }
+                    }
+                    .onSubmit {
+                        // Lấy thông tin khi nhấn Enter
+                        if !xuatKhoVM.MaNv.isEmpty {
+                            fetchEmployeeInfo(employeeID: xuatKhoVM.MaNv)
+                        }
+                    }
                 
                 Button {
                     withAnimation {
@@ -599,14 +606,8 @@ struct XuatKhoUIView: View {
         // Handle barcode scanning logic
         if ScranEmployee{
             //xuatKhoVM.MaNv = code
-            xuatKhoVM.getUserInforData(employeeID: code) {_ in
-                DispatchQueue.main.async {
-                    self.isLoading = false
-                    xuatKhoVM.MaNv = self.xuatKhoVM.dataUser?.chR_EMPLOYEE_ID ?? code
-                    xuatKhoVM.TenNv = self.xuatKhoVM.dataUser?.chR_EMPLOYEE_NAME ?? "Không xác định"
-                    xuatKhoVM.SDT = self.xuatKhoVM.dataUser?.chR_PHONE_NO ?? "Không có trên hệ thống"
-                }
-            }
+            xuatKhoVM.MaNv = code
+            fetchEmployeeInfo(employeeID: code)
         }else{
             //xuatKhoVM.phanLoai = code
             xuatKhoVM.getPhanLoaiAPI(stockName: selectKho, code: code) {_ in 
@@ -661,7 +662,10 @@ struct XuatKhoUIView: View {
             xuatKhoVM.errorMessage = "Vui lòng nhập số điện thoại liên hệ"
             return
         }
-        
+        guard isNgayTraValid() else {
+            xuatKhoVM.errorMessage = "Ngày trả không được vượt quá 3 tháng so với ngày xuất"
+            return
+        }
         guard !lyDo.isEmpty else {
             xuatKhoVM.errorMessage = "Vui lòng nhập lý do xuất kho"
             return
@@ -669,6 +673,51 @@ struct XuatKhoUIView: View {
         
         isLoading = true
         // Call API or perform submission logic
+        xuatKhoVM.MuonOrXuat(stock: selectKho, adid: userDataManager.currentUser?.chR_ADID ?? "", SectionAdid: userDataManager.currentUser?.chR_COST_CENTER ?? ""){_ in
+            DispatchQueue.main.async {
+                isLoading = false
+                xuatKhoVM.ResetFrom()
+            }
+        }
+    }
+    // Hàm lấy thông tin nhân viên
+    private func fetchEmployeeInfo(employeeID: String) {
+        isLoading = true
+        xuatKhoVM.getUserInforData(employeeID: employeeID) { success in
+            DispatchQueue.main.async {
+                self.isLoading = false
+                if success {
+                    // Cập nhật thông tin từ API
+                    xuatKhoVM.TenNv = self.xuatKhoVM.dataUser?.chR_EMPLOYEE_NAME ?? "Không xác định"
+                    xuatKhoVM.SDT = self.xuatKhoVM.dataUser?.chR_PHONE_NO ?? "Không có trên hệ thống"
+                } else {
+                    // Giữ nguyên giá trị nhập tay nếu không tìm thấy
+                    xuatKhoVM.TenNv = "Không tìm thấy thông tin"
+                    xuatKhoVM.SDT = "Vui lòng nhập thủ công"
+                }
+            }
+        }
+    }
+    // Hàm kiểm tra ngày trả không vượt quá 3 tháng
+    private func isNgayTraValid() -> Bool {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "dd/MM/yyyy" // hoặc định dạng bạn đang sử dụng
+        
+        guard let ngayXuatDate = dateFormatter.date(from: xuatKhoVM.NgayXuat),
+              let ngayTraDate = dateFormatter.date(from: xuatKhoVM.NgayTra) else {
+            return false
+        }
+        
+        // Tính khoảng cách giữa hai ngày
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.month], from: ngayXuatDate, to: ngayTraDate)
+        
+        // Kiểm tra không vượt quá 3 tháng
+        if let monthsDifference = components.month, monthsDifference <= 3 {
+            return true
+        }
+        
+        return false
     }
 }
 #Preview {

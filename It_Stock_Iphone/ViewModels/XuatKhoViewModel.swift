@@ -23,6 +23,8 @@ class XuatKhoViewModel: ObservableObject {
     @Published var LyDo = ""
     @Published var IdGood = 0
     
+    @Published var slTra = ""
+    
     // Các lựa chọn
     @Published var listLuaChon = ["Xuất kho","Cho mượn"]
     @Published var ListLoaiHang = ["Hàng mới","Hàng tái sử dụng"]
@@ -178,11 +180,12 @@ class XuatKhoViewModel: ObservableObject {
                 
                 if !(200...299).contains(httpResponse.statusCode) {
                     // Nếu status code không thành công, thử parse error message
-//                    if let errorResponse = try? JSONDecoder().decode(errorResponse.self, from: output.data) {
-//                        throw NSError(domain: "", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: errorResponse.message ?? "Lỗi server"])
-//                    } else {
-//                        throw URLError(.badServerResponse)
-//                    }
+                    if let errorString = String(data: output.data, encoding: .utf8) {
+                        throw NSError(domain: "", code: httpResponse.statusCode,
+                                    userInfo: [NSLocalizedDescriptionKey: "Server error: \(errorString)"])
+                    } else {
+                        throw URLError(URLError.Code(rawValue: httpResponse.statusCode))
+                    }
                 }
                 
                 return output.data
@@ -215,18 +218,84 @@ class XuatKhoViewModel: ObservableObject {
             )
             .store(in: &cancellables)
     }
+    
     // Phân func Mượn or Xuất
-    func MuonOrXuat() {
+    func MuonOrXuat(stock: String, adid: String, SectionAdid: String,completion: @escaping (Bool) -> Void) {
+        isLoading = true
+        errorMessage = nil
         if loai == "Xuất kho"{
-          //  XuatStock()
+            XuatStock(stock: stock, adid: adid, SectionAdid: SectionAdid) { success in
+                completion(success)
+             }
         }else if loai == "Cho mượn"{
-            MuonStock()
+            MuonStock(stock: stock, adid: adid, SectionAdid: SectionAdid) { success in
+                completion(success)
         }
     }
     
     // Mượn
-    func MuonStock(){
-        
+        func MuonStock(stock: String, adid: String, SectionAdid: String,completion: @escaping (Bool) -> Void){
+            isLoading = true
+            errorMessage = nil
+            isSuccess = false
+            
+            guard let url = URL(string: ApiLink.shared.exportBorrowReturn) else {
+                errorMessage = "URL không hợp lệ"
+                isLoading = false
+                completion(false)
+                return
+            }
+            var typeGood = ""
+            if LoaiHang == "Hàng mới" {
+                typeGood = "N"
+            }else{
+                typeGood = "R"
+            }//chR_PER_SECT, nvchR_EQUIP_NAME chưa xác định
+            let requesBody = BorrowData(iD_GOODS: IdGood, nvchR_ITEM_NAME: phanLoai, chR_KHO: stock, chR_KIND_IN_OUT: "R", chR_TYPE_GOODS: typeGood, inT_QTY_IN_OUT: Int(slXuat), inT_QTY_IN_STOCK: nil, dtM_DATE_IN_OUT: NgayXuat, chR_PER_IT: adid, chR_SECT: SectionAdid, chR_PER_SECT: TenNv, chR_CODE_PER_SECT: MaNv, nvchR_EQUIP_NAME: phanLoai, nvchR_REASON_IN_OUT: LyDo, chR_USER_UPDATE: adid, chR_KHO_NHAN: khoNhan, vchR_BORROWER_PHONE_NUMBER: SDT, dtM_EXPECTED_RETURN_DATE: NgayTra, id: nil, nvchR_RETURNER: nil, vchR_CODE_RETURNER: nil, vchR_RETURNER_PHONE_NUMBER: nil, inT_QUANTITY_RETURN: nil, dtM_RETURN_DATE: nil, vchR_BORROW_CODE: nil)
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            
+            do {
+                let jsonData = try JSONEncoder().encode(requesBody)
+                request.httpBody = jsonData
+            } catch {
+                errorMessage = "Error encoding JSON: \(error)"
+                isLoading = false
+                completion(false)
+                return
+            }
+            URLSession.shared.dataTaskPublisher(for: request)
+                .tryMap { output in
+                    guard let httpResponse = output.response as? HTTPURLResponse,
+                          (200...299).contains(httpResponse.statusCode) else {
+                        throw URLError(.badServerResponse)
+                    }
+                    return output.data
+                }
+                .decode(type: BorrowModel.self, decoder: JSONDecoder())
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] completionResult in
+                    self?.isLoading = false
+                    switch completionResult {
+                    case .failure(let error):
+                        self?.errorMessage = error.localizedDescription
+                        completion(false)
+                    case .finished:
+                        break
+                    }
+                } receiveValue: { [weak self] response in
+                    if response.success {
+                        self?.isLoading = false
+                        self?.isSuccess = true
+                        completion(false)
+                    } else {
+                        self?.errorMessage = response.message ?? "Xuất kho thất bại"
+                        completion(false)
+                    }
+                }
+                .store(in: &cancellables)
+        }
     }
 //    int IDgoods = IDhang;
 //    string tenhang = txtItemName.Text; // tên hàng (phân loại)
@@ -248,7 +317,7 @@ class XuatKhoViewModel: ObservableObject {
     
     // Mượn
 //         string borrowPhoneNumber = txtBorrowPhoneNumber.Text; // SĐT người mượn
-//         string expectedReturnDate = dtmExpectedReturnDate.Value.ToString("yyyy-MM-dd"); // Ngày dự kiến tr
+//         string expectedReturnDate = dtmExpectedReturnDate.Value.ToString("yyyy-MM-dd"); // Ngày dự kiến tra
     
     
     
@@ -273,7 +342,7 @@ class XuatKhoViewModel: ObservableObject {
 //    txtLabelReasonInOut = labelReasonInOut.Text;
 //    txtLabelBorrowerPhoneNumber = labelBorrowerPhoneNumber.Text;
     // Xuất
-    func XuatStock(stock: String, adid: String, SectionAdid: String){
+    func XuatStock(stock: String, adid: String, SectionAdid: String,completion: @escaping (Bool) -> Void){
         isLoading = true
         errorMessage = nil
         isSuccess = false
@@ -281,6 +350,7 @@ class XuatKhoViewModel: ObservableObject {
         guard let url = URL(string: ApiLink.shared.exportBorrowReturn) else {
             errorMessage = "URL không hợp lệ"
             isLoading = false
+            completion(false)
             return
         }
         var typeGood = ""
@@ -289,7 +359,50 @@ class XuatKhoViewModel: ObservableObject {
         }else{
             typeGood = "R"
         }
-        let requesBody = BorrowData(iD_GOODS: IdGood, nvchR_ITEM_NAME: phanLoai, chR_KHO: stock, chR_KIND_IN_OUT: "O", chR_TYPE_GOODS: typeGood, inT_QTY_IN_OUT: Int(slXuat), inT_QTY_IN_STOCK: nil, dtM_DATE_IN_OUT: NgayXuat, chR_PER_IT: adid, chR_SECT: SectionAdid, chR_PER_SECT: nil, chR_CODE_PER_SECT: nil, nvchR_EQUIP_NAME: nil, nvchR_REASON_IN_OUT: LyDo, chR_USER_UPDATE: adid, chR_KHO_NHAN: khoNhan, vchR_BORROWER_PHONE_NUMBER: nil, dtM_EXPECTED_RETURN_DATE: nil, id: nil, nvchR_RETURNER: nil, vchR_CODE_RETURNER: nil, vchR_RETURNER_PHONE_NUMBER: nil, inT_QUANTITY_RETURN: nil, dtM_RETURN_DATE: nil, vchR_BORROW_CODE: nil)
+        let requesBody = BorrowData(iD_GOODS: IdGood, nvchR_ITEM_NAME: phanLoai, chR_KHO: stock, chR_KIND_IN_OUT: "O", chR_TYPE_GOODS: typeGood, inT_QTY_IN_OUT: Int(slXuat), inT_QTY_IN_STOCK: nil, dtM_DATE_IN_OUT: NgayXuat, chR_PER_IT: adid, chR_SECT: SectionAdid, chR_PER_SECT: TenNv, chR_CODE_PER_SECT: MaNv, nvchR_EQUIP_NAME: phanLoai, nvchR_REASON_IN_OUT: LyDo, chR_USER_UPDATE: adid, chR_KHO_NHAN: khoNhan, vchR_BORROWER_PHONE_NUMBER: nil, dtM_EXPECTED_RETURN_DATE: nil, id: nil, nvchR_RETURNER: nil, vchR_CODE_RETURNER: nil, vchR_RETURNER_PHONE_NUMBER: nil, inT_QUANTITY_RETURN: nil, dtM_RETURN_DATE: nil, vchR_BORROW_CODE: nil)
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        do {
+            let jsonData = try JSONEncoder().encode(requesBody)
+            request.httpBody = jsonData
+        } catch {
+            errorMessage = "Error encoding JSON: \(error)"
+            isLoading = false
+            completion(false)
+            return
+        }
+        URLSession.shared.dataTaskPublisher(for: request)
+            .tryMap { output in
+                guard let httpResponse = output.response as? HTTPURLResponse,
+                      (200...299).contains(httpResponse.statusCode) else {
+                    throw URLError(.badServerResponse)
+                }
+                return output.data
+            }
+            .decode(type: BorrowModel.self, decoder: JSONDecoder())
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] completionResult in
+                self?.isLoading = false
+                switch completionResult {
+                case .failure(let error):
+                    self?.errorMessage = error.localizedDescription
+                    completion(false)
+                case .finished:
+                    break
+                }
+            } receiveValue: { [weak self] response in
+                if response.success {
+                    self?.isLoading = false
+                    self?.isSuccess = true
+                    completion(false)
+                } else {
+                    self?.errorMessage = response.message ?? "Xuất kho thất bại"
+                    completion(false)
+                }
+            }
+            .store(in: &cancellables)
     }
     
     // Reset
@@ -306,5 +419,14 @@ class XuatKhoViewModel: ObservableObject {
         TenNv = ""
         SDT = ""
         LyDo = ""
+        
+        //reset trả
+        slTra=""
+        // reset tim kiem api
+        data = nil
+        isLoading = false
+        isSuccess = false
+        errorMessage = nil
+        dataUser = nil
     }
 }

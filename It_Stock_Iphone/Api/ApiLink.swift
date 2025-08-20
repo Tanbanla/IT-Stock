@@ -57,42 +57,6 @@ class ApiLink{
     var getStockBySection: String{
         return baseUrl + "Factory/get-stock-by-section-control"
     }
-//    {
-//      "success": true,
-//      "status": 200,
-//      "message": null,
-//      "error": null,
-//      "data": [
-//        {
-//          "chR_FACT_CODE": "BIVN",
-//          "chR_STOCK_NAME": "BIVN-F1",
-//          "chR_TYPE": "I_O_T_L",
-//          "nvchR_NOTE": "Nhập, xuất, chuyển kho, cho mượn",
-//          "chR_SEC_CONTROL": "3510    "
-//        },
-//        {
-//          "chR_FACT_CODE": "BIVN",
-//          "chR_STOCK_NAME": "BIVN-F5",
-//          "chR_TYPE": "I_O_L",
-//          "nvchR_NOTE": "Nhập, xuất, cho mượn",
-//          "chR_SEC_CONTROL": "3510    "
-//        },
-//        {
-//          "chR_FACT_CODE": "TTF",
-//          "chR_STOCK_NAME": "TTF-F1",
-//          "chR_TYPE": "I_O_T_L",
-//          "nvchR_NOTE": "Nhập, xuất, chuyển kho, cho mượn",
-//          "chR_SEC_CONTROL": "3510    "
-//        },
-//        {
-//          "chR_FACT_CODE": "TTF",
-//          "chR_STOCK_NAME": "TTF-F2",
-//          "chR_TYPE": "I_O_L",
-//          "nvchR_NOTE": "Nhập, xuất, cho mượn",
-//          "chR_SEC_CONTROL": "3510    "
-//        }
-//      ]
-//    }
     //MasterGood
     var MasterGoodBySection: String{
         return baseUrl + "MasterGood/get-by-section-control"
