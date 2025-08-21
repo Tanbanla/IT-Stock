@@ -11,7 +11,6 @@ struct XuatKhoUIView: View {
     @StateObject private var xuatKhoVM = XuatKhoViewModel()
     @EnvironmentObject var userDataManager: UserDataManager
     @State private var currentDate: String = ""
-    @State private var lyDo: String = ""
     
     @State private var showScran: Bool = false
     @State private var ScranEmployee: Bool = false
@@ -358,6 +357,8 @@ struct XuatKhoUIView: View {
                         RoundedRectangle(cornerRadius: 10)
                             .stroke(Color.blue.opacity(0.2), lineWidth: 1)
                     )
+            }.onAppear{
+                xuatKhoVM.NgayXuat = currentDate
             }
             // Ngày dự trả
             VStack(alignment: .leading, spacing: 8) {
@@ -386,11 +387,9 @@ struct XuatKhoUIView: View {
                     CustomDatePickerSheet(
                         selectedDate: $selectedDate,
                         formattedDate: $formattedDate,
-                        isPresented: $showCanlender
+                        isPresented: $showCanlender,
+                        NgayTra: $xuatKhoVM.NgayTra
                     )
-                    
-                }.onAppear{
-                    xuatKhoVM.NgayTra = formattedDate
                 }
             }
             Spacer()
@@ -499,7 +498,7 @@ struct XuatKhoUIView: View {
             }
             
             ZStack(alignment: .topLeading) {
-                TextEditor(text: $lyDo)
+                TextEditor(text: $xuatKhoVM.LyDo)
                     .frame(height: 120)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
@@ -509,11 +508,8 @@ struct XuatKhoUIView: View {
                         RoundedRectangle(cornerRadius: 12)
                             .stroke(Color.blue.opacity(0.2), lineWidth: 1)
                     )
-                    .onChange(of: lyDo) { newValue in
-                        xuatKhoVM.LyDo = newValue
-                    }
                 
-                if lyDo.isEmpty {
+                if xuatKhoVM.LyDo.isEmpty {
                     Text("Nhập lý do xuất kho...")
                         .foregroundColor(.gray)
                         .padding(.horizontal, 16)
@@ -531,6 +527,8 @@ struct XuatKhoUIView: View {
         } label: {
             if isLoading {
                 ProgressView()
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 56)
                     .progressViewStyle(CircularProgressViewStyle(tint: .white))
                     .scaleEffect(1.2)
             } else {
@@ -538,12 +536,11 @@ struct XuatKhoUIView: View {
                     Image(systemName: "checkmark.circle.fill")
                     Text("XÁC NHẬN")
                         .font(.system(size: 18, weight: .bold))
-                }
+                }        .frame(maxWidth: .infinity)
+                    .frame(height: 56)
                 .foregroundColor(.white)
             }
         }
-        .frame(maxWidth: .infinity)
-        .frame(height: 56)
         .background(Color.blue)
         .cornerRadius(16)
         .shadow(color: Color.blue.opacity(0.3), radius: 8, x: 0, y: 4)
@@ -555,6 +552,7 @@ struct XuatKhoUIView: View {
         @Binding var selectedDate: Date
         @Binding var formattedDate: String
         @Binding var isPresented: Bool
+        @Binding var  NgayTra: String
 
         var body: some View {
             VStack {
@@ -578,6 +576,7 @@ struct XuatKhoUIView: View {
                 Button(action: {
                     formattedDate = formatDate(selectedDate)
                     isPresented = false
+                    NgayTra = formatDate(selectedDate)
                 }) {
                     Text("Xong")
                         .font(.headline)
@@ -614,6 +613,7 @@ struct XuatKhoUIView: View {
                 DispatchQueue.main.async {
                     self.isLoading = false
                     xuatKhoVM.phanLoai = self.xuatKhoVM.data?.nvchR_ITEM_NAME ?? code
+                    xuatKhoVM.slTon = String((self.xuatKhoVM.data?.inT_QTY_OLD ?? 0) + (self.xuatKhoVM.data?.inT_QTY_OLD ?? 0))
                 }
             }
         }
@@ -653,11 +653,11 @@ struct XuatKhoUIView: View {
         }
 
         let total = ton - quantity
-        guard total < 0 else {
+        guard total > 0 else {
             xuatKhoVM.errorMessage = "Số lượng xuất vượt quá số lượng tồn"
             return
         }
-        
+        xuatKhoVM.TongSl = total
         guard !xuatKhoVM.SDT.isEmpty else {
             xuatKhoVM.errorMessage = "Vui lòng nhập số điện thoại liên hệ"
             return
@@ -666,7 +666,7 @@ struct XuatKhoUIView: View {
             xuatKhoVM.errorMessage = "Ngày trả không được vượt quá 3 tháng so với ngày xuất"
             return
         }
-        guard !lyDo.isEmpty else {
+        guard !xuatKhoVM.LyDo.isEmpty else {
             xuatKhoVM.errorMessage = "Vui lòng nhập lý do xuất kho"
             return
         }
@@ -703,11 +703,13 @@ struct XuatKhoUIView: View {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "dd/MM/yyyy" // hoặc định dạng bạn đang sử dụng
         
-        guard let ngayXuatDate = dateFormatter.date(from: xuatKhoVM.NgayXuat),
-              let ngayTraDate = dateFormatter.date(from: xuatKhoVM.NgayTra) else {
+        guard let ngayXuatDate = dateFormatter.date(from: xuatKhoVM.NgayXuat)
+              else {
             return false
         }
-        
+        guard let ngayTraDate = dateFormatter.date(from: xuatKhoVM.NgayTra) else{
+            return false
+        }
         // Tính khoảng cách giữa hai ngày
         let calendar = Calendar.current
         let components = calendar.dateComponents([.month], from: ngayXuatDate, to: ngayTraDate)

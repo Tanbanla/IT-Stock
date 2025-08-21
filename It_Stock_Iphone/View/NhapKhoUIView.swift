@@ -277,7 +277,8 @@ struct NhapKhoUIView: View {
             submitImport()
         } label: {
             if isLoading {
-                ProgressView()
+                ProgressView().frame(maxWidth: .infinity)
+                    .frame(height: 56)
                     .progressViewStyle(CircularProgressViewStyle(tint: .white))
                     .scaleEffect(1.2)
             } else {
@@ -285,12 +286,11 @@ struct NhapKhoUIView: View {
                     Image(systemName: "square.and.arrow.down.fill")
                     Text("NHẬP KHO")
                         .font(.system(size: 18, weight: .bold))
-                }
+                }        .frame(maxWidth: .infinity)
+                    .frame(height: 56)
                 .foregroundColor(.white)
             }
         }
-        .frame(maxWidth: .infinity)
-        .frame(height: 56)
         .background(Color.blue)
         .cornerRadius(16)
         .shadow(color: Color.blue.opacity(0.3), radius: 8, x: 0, y: 4)

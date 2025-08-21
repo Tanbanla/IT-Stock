@@ -89,6 +89,13 @@ struct LogInUIView: View {
             }.fullScreenCover(isPresented: $showMainView) {
                 MainUIView() //$viewModel.isLoggedIn
             }
+            .alert("Lỗi", isPresented: .constant(viewModel.errorMessage != nil)) {
+                Button("OK") {
+                    viewModel.errorMessage = nil
+                }
+            } message: {
+                Text(viewModel.errorMessage ?? "")
+            }
             .alert("Đăng nhập thành công",isPresented: $viewModel.isLoggedIn) {
                 Button("OK", role: .cancel) {
                     showMainView = true

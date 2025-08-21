@@ -253,7 +253,7 @@ struct HomeUIView: View {
                 color: Color.blue,
                 action: {
                     if factorySelect != "" {
-                        showImportView.toggle()
+                        showCheckView.toggle()
                     } else {
                         showCheckView = true
                     }

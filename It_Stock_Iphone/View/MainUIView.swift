@@ -33,6 +33,7 @@ struct MainUIView: View {
                     .tag(Tab.borrow)
                     .ignoresSafeArea(.all, edges: .bottom)
             }
+            .padding(.bottom, 98)
             .tabViewStyle(.page(indexDisplayMode: .never))
             .ignoresSafeArea(.all, edges: .bottom)
             

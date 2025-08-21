@@ -15,12 +15,11 @@ struct TraTBUIView: View {
     @State private var lyDo: String = ""
     
     @State private var showScran: Bool = false
-    @State private var ScranEmployee: Bool = false
     @State private var isLoading: Bool = false
-    // Hiển thị lịch
-    @State private var formattedDate: String = ""
-    @State private var selectedDate = Date()
-    @State private var showCanlender: Bool = false
+    
+    //thong tin thiet bi tra
+    let item: ListBorrowData?
+
     
     @Environment(\.dismiss) private var dismiss
 //    let listKho: [FactoryData]?
@@ -103,7 +102,9 @@ struct TraTBUIView: View {
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
                             .stroke(Color.blue.opacity(0.2), lineWidth: 1)
-                    )
+                    ).onAppear{
+                        xuatKhoVM.phanLoai = item?.nvchR_ITEM_NAME ?? ""
+                    }
             }
         }
     }
@@ -119,41 +120,26 @@ struct TraTBUIView: View {
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.red)
             }
-            
-            Menu {
-                ForEach(xuatKhoVM.ListLoaiHang, id: \.self) { loaiHang in
-                    Button {
-                        xuatKhoVM.LoaiHang = loaiHang
-                    } label: {
-                        HStack {
-                            Text(loaiHang)
-                            if loaiHang == xuatKhoVM.LoaiHang {
-                                Image(systemName: "checkmark")
-                                    .foregroundColor(.blue)
-                            }
-                        }
-                    }
-                }
-            } label: {
-                HStack {
-                    Text(xuatKhoVM.LoaiHang.isEmpty ? "Chọn loại hàng" : xuatKhoVM.LoaiHang)
-                        .font(.system(size: 16))
-                        .foregroundColor(xuatKhoVM.LoaiHang.isEmpty ? .gray : .primary)
-                    
-                    Spacer()
-                    
-                    Image(systemName: "chevron.down")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(.blue)
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 14)
-                .background(Color.blue.opacity(0.08))
-                .cornerRadius(12)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.blue.opacity(0.2), lineWidth: 1)
-                )
+            HStack {
+                Text(xuatKhoVM.LoaiHang.isEmpty ? "Chọn loại hàng" : xuatKhoVM.LoaiHang)
+                    .font(.system(size: 16))
+                    .foregroundColor(xuatKhoVM.LoaiHang.isEmpty ? .gray : .primary)
+                
+                Spacer()
+                
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.blue)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            .background(Color.blue.opacity(0.08))
+            .cornerRadius(12)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color.blue.opacity(0.2), lineWidth: 1)
+            ).onAppear{
+                xuatKhoVM.LoaiHang = item?.chR_TYPE_GOODS ?? ""
             }
         }
     }
@@ -174,7 +160,13 @@ struct TraTBUIView: View {
                     .overlay(
                         RoundedRectangle(cornerRadius: 10)
                             .stroke(Color.blue.opacity(0.2), lineWidth: 1)
-                    )
+                    ).onAppear{
+                        if let qtyInStock = item?.inT_QTY_IN_STOCK {
+                            xuatKhoVM.slTon = String(qtyInStock)
+                        } else {
+                            xuatKhoVM.slTon = "0"
+                        }
+                    }
             }
 
             // Số lượng xuất
@@ -269,7 +261,6 @@ struct TraTBUIView: View {
                 
                 Button {
                     withAnimation {
-                        ScranEmployee = true
                         showScran = true
                     }
                 } label: {
@@ -376,6 +367,3 @@ struct TraTBUIView: View {
     }
 }
 
-#Preview {
-    TraTBUIView()
-}

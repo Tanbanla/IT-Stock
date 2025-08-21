@@ -21,33 +21,9 @@ class ApiLink{
     var exportBorrowReturn: String {
         return baseUrl + "DataInOut/export-borrow-return";
     }
-//    {
-//      "iD_GOODS": 0,
-//      "nvchR_ITEM_NAME": "string",
-//      "chR_KHO": "string",
-//      "chR_KIND_IN_OUT": "string",
-//      "chR_TYPE_GOODS": "string",
-//      "inT_QTY_IN_OUT": 0,
-//      "inT_QTY_IN_STOCK": 0,
-//      "dtM_DATE_IN_OUT": "2025-08-16T10:14:06.089Z",
-//      "chR_PER_IT": "string",
-//      "chR_SECT": "string",
-//      "chR_PER_SECT": "string",
-//      "chR_CODE_PER_SECT": "string",
-//      "nvchR_EQUIP_NAME": "string",
-//      "nvchR_REASON_IN_OUT": "string",
-//      "chR_USER_UPDATE": "string",
-//      "chR_KHO_NHAN": "string",
-//      "vchR_BORROWER_PHONE_NUMBER": "string",
-//      "dtM_EXPECTED_RETURN_DATE": "2025-08-16T10:14:06.089Z",
-//      "id": 0,
-//      "nvchR_RETURNER": "string",
-//      "vchR_CODE_RETURNER": "string",
-//      "vchR_RETURNER_PHONE_NUMBER": "string",
-//      "inT_QUANTITY_RETURN": 0,
-//      "dtM_RETURN_DATE": "2025-08-16T10:14:06.089Z",
-//      "vchR_BORROW_CODE": "string"
-//    }
+    var listBorrowNotReturn: String{
+        return baseUrl + "DataInOut/get-list-borrowed-data";
+    }
     //Factory
     //get by section
     var getBySection: String{
@@ -92,5 +68,4 @@ class ApiLink{
     var UserAdidOrID: String{
         return baseUrl + "User/get-employee-from-agentdb-by-adid-or-employee-id"
     }
-    //http://172.26.248.62:8502/api/User/get-employee-from-agentdb-by-adid-or-employee-id?adidOrEmployeeId=M0114622
 }

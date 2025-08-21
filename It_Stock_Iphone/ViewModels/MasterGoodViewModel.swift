@@ -8,7 +8,7 @@ import Foundation
 import Combine
 class MasterGoodViewModel: ObservableObject{
     @Published var phanloai: [MasterGoodData]? = []
-    @Published var data: MasterGoodData?
+    @Published var data: MasterGoodDataSL?
     @Published var isLoading: Bool = false
     @Published var isSuccess: Bool = false
     @Published var errorMessage: String?

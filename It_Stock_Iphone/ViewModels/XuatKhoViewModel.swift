@@ -22,6 +22,7 @@ class XuatKhoViewModel: ObservableObject {
     @Published var SDT = ""
     @Published var LyDo = ""
     @Published var IdGood = 0
+    @Published var TongSl = 0
     
     @Published var slTra = ""
     
@@ -30,7 +31,7 @@ class XuatKhoViewModel: ObservableObject {
     @Published var ListLoaiHang = ["Hàng mới","Hàng tái sử dụng"]
     
     //  Các biến lưu dữ liệu API
-    @Published var data: MasterGoodData?
+    @Published var data: MasterGoodDataSL?
     @Published var isLoading: Bool = false
     @Published var isSuccess: Bool = false
     @Published var errorMessage: String?
@@ -251,7 +252,7 @@ class XuatKhoViewModel: ObservableObject {
             }else{
                 typeGood = "R"
             }//chR_PER_SECT, nvchR_EQUIP_NAME chưa xác định
-            let requesBody = BorrowData(iD_GOODS: IdGood, nvchR_ITEM_NAME: phanLoai, chR_KHO: stock, chR_KIND_IN_OUT: "R", chR_TYPE_GOODS: typeGood, inT_QTY_IN_OUT: Int(slXuat), inT_QTY_IN_STOCK: nil, dtM_DATE_IN_OUT: NgayXuat, chR_PER_IT: adid, chR_SECT: SectionAdid, chR_PER_SECT: TenNv, chR_CODE_PER_SECT: MaNv, nvchR_EQUIP_NAME: phanLoai, nvchR_REASON_IN_OUT: LyDo, chR_USER_UPDATE: adid, chR_KHO_NHAN: khoNhan, vchR_BORROWER_PHONE_NUMBER: SDT, dtM_EXPECTED_RETURN_DATE: NgayTra, id: nil, nvchR_RETURNER: nil, vchR_CODE_RETURNER: nil, vchR_RETURNER_PHONE_NUMBER: nil, inT_QUANTITY_RETURN: nil, dtM_RETURN_DATE: nil, vchR_BORROW_CODE: nil)
+            let requesBody = BorrowData(iD_GOODS: IdGood, nvchR_ITEM_NAME: phanLoai, chR_KHO: stock, chR_KIND_IN_OUT: "R", chR_TYPE_GOODS: typeGood, inT_QTY_IN_OUT: Int(slXuat), inT_QTY_IN_STOCK: nil, dtM_DATE_IN_OUT: NgayXuat, chR_PER_IT: adid, chR_SECT: SectionAdid, chR_PER_SECT: TenNv, chR_CODE_PER_SECT: MaNv, nvchR_EQUIP_NAME: nil, nvchR_REASON_IN_OUT: LyDo, chR_USER_UPDATE: adid, chR_KHO_NHAN: khoNhan, vchR_BORROWER_PHONE_NUMBER: SDT, dtM_EXPECTED_RETURN_DATE: NgayTra, id: nil, nvchR_RETURNER: nil, vchR_CODE_RETURNER: nil, vchR_RETURNER_PHONE_NUMBER: nil, inT_QUANTITY_RETURN: nil, dtM_RETURN_DATE: nil, vchR_BORROW_CODE: nil)
             var request = URLRequest(url: url)
             request.httpMethod = "POST"
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -359,7 +360,7 @@ class XuatKhoViewModel: ObservableObject {
         }else{
             typeGood = "R"
         }
-        let requesBody = BorrowData(iD_GOODS: IdGood, nvchR_ITEM_NAME: phanLoai, chR_KHO: stock, chR_KIND_IN_OUT: "O", chR_TYPE_GOODS: typeGood, inT_QTY_IN_OUT: Int(slXuat), inT_QTY_IN_STOCK: nil, dtM_DATE_IN_OUT: NgayXuat, chR_PER_IT: adid, chR_SECT: SectionAdid, chR_PER_SECT: TenNv, chR_CODE_PER_SECT: MaNv, nvchR_EQUIP_NAME: phanLoai, nvchR_REASON_IN_OUT: LyDo, chR_USER_UPDATE: adid, chR_KHO_NHAN: khoNhan, vchR_BORROWER_PHONE_NUMBER: nil, dtM_EXPECTED_RETURN_DATE: nil, id: nil, nvchR_RETURNER: nil, vchR_CODE_RETURNER: nil, vchR_RETURNER_PHONE_NUMBER: nil, inT_QUANTITY_RETURN: nil, dtM_RETURN_DATE: nil, vchR_BORROW_CODE: nil)
+        let requesBody = BorrowData(iD_GOODS: IdGood, nvchR_ITEM_NAME: phanLoai, chR_KHO: stock, chR_KIND_IN_OUT: "O", chR_TYPE_GOODS: typeGood, inT_QTY_IN_OUT: Int(slXuat), inT_QTY_IN_STOCK: nil, dtM_DATE_IN_OUT: NgayXuat, chR_PER_IT: adid, chR_SECT: SectionAdid, chR_PER_SECT: TenNv, chR_CODE_PER_SECT: MaNv, nvchR_EQUIP_NAME: nil, nvchR_REASON_IN_OUT: LyDo, chR_USER_UPDATE: adid, chR_KHO_NHAN: khoNhan, vchR_BORROWER_PHONE_NUMBER: nil, dtM_EXPECTED_RETURN_DATE: nil, id: nil, nvchR_RETURNER: nil, vchR_CODE_RETURNER: nil, vchR_RETURNER_PHONE_NUMBER: nil, inT_QUANTITY_RETURN: nil, dtM_RETURN_DATE: nil, vchR_BORROW_CODE: nil)
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
