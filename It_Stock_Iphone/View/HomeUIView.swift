@@ -11,7 +11,7 @@ struct HomeUIView: View {
     @EnvironmentObject var userDataManager: UserDataManager
     @State private var isShowIcon: Bool = true
     @StateObject private var factoryVM = FactoryViewModel()
-    @State private var factorySelect: String = ""
+    @Binding var factorySelect: String
     @State private var showMessage: Bool = false
     @State private var showExportView = false
     @State private var showImportView = false
@@ -85,13 +85,6 @@ struct HomeUIView: View {
                     .font(.system(size: 20))
                     .foregroundColor(.white)
                     .frame(width: 44, height: 44)
-//                    .background(
-//                        LinearGradient(
-//                            colors: [.blue, .purple],
-//                            startPoint: .topLeading,
-//                            endPoint: .bottomTrailing
-//                        )
-//                    )
                     .background(Color.blue)
                     .clipShape(Circle())
                     .shadow(color: Color.blue.opacity(0.3), radius: 5, x: 0, y: 3)
@@ -300,6 +293,6 @@ struct HomeUIView: View {
         }
     }
 }
-#Preview {
-    HomeUIView()
-}
+//#Preview {
+//    HomeUIView()
+//}

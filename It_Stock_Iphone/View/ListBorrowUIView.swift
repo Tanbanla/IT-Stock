@@ -10,6 +10,9 @@ import SwiftUI
 struct ListBorrowUIView: View {
     @State private var searchText = ""
     @StateObject private var BorrowListVM = ListBorrowViewModel()
+    @State private var selectedItem: ListBorrowData? = nil
+    @State private var showTraView: Bool = false
+    @Binding var factorySelect: String
     var body: some View {
         ZStack{
             VStack{
@@ -28,7 +31,9 @@ struct ListBorrowUIView: View {
                 } else{
                     BorrowListView(
                          borrowItems: filteredBorrowItems,
-                         searchText: searchText
+                         searchText: searchText,
+                         selectedItem: $selectedItem,
+                         showTraView: $showTraView
                      )
                  }
             }
@@ -44,6 +49,9 @@ struct ListBorrowUIView: View {
         }
         .refreshable {
             loadData()
+        }
+        .fullScreenCover(item: $selectedItem) { item in
+            TraTBUIView(item: item, selectKho: factorySelect)
         }
     }
     // MARK: - Computed Properties
@@ -129,8 +137,8 @@ struct SearchBar1: View {
  struct BorrowListView: View {
      let borrowItems: [ListBorrowData]
      let searchText: String
-     @State private var showTraView: Bool = false
-     @State private var selectedItem: ListBorrowData? = nil
+     @Binding var selectedItem: ListBorrowData?
+     @Binding var showTraView: Bool
      
      var body: some View {
          ScrollView {
@@ -152,8 +160,6 @@ struct SearchBar1: View {
                  }
              }
              .padding()
-         }.fullScreenCover(isPresented: $showTraView) {
-             TraTBUIView(item:  selectedItem)
          }
      }
      // MARK: - Borrow Item Card
@@ -295,6 +301,4 @@ private func formatDateString(_ dateString: String?) -> String? {
     
     return dateString // Trả về nguyên bản nếu không parse được
 }
-#Preview {
-    ListBorrowUIView()
-}
+

@@ -405,6 +405,69 @@ class XuatKhoViewModel: ObservableObject {
             }
             .store(in: &cancellables)
     }
+    // Tra
+    func TraStock(stock: String, adid: String,item: ListBorrowData?,completion: @escaping (Bool) -> Void){
+        isLoading = true
+        errorMessage = nil
+        isSuccess = false
+        
+        guard let url = URL(string: ApiLink.shared.exportBorrowReturn) else {
+            errorMessage = "URL không hợp lệ"
+            isLoading = false
+            completion(false)
+            return
+        }
+        var typeGood = ""
+        if LoaiHang == "Hàng mới" {
+            typeGood = "N"
+        }else{
+            typeGood = "R"
+        }// Cần xác nhận vchR_BORROW_CODE
+        let requesBody = BorrowData(iD_GOODS: Int(item?.iD_GOODS ?? "0"), nvchR_ITEM_NAME: phanLoai, chR_KHO: stock, chR_KIND_IN_OUT: "R", chR_TYPE_GOODS: typeGood, inT_QTY_IN_OUT: item?.inT_QTY_IN_OUT, inT_QTY_IN_STOCK: item?.inT_QTY_IN_STOCK, dtM_DATE_IN_OUT: item?.dtM_DATE_IN_OUT, chR_PER_IT: item?.chR_PER_IT, chR_SECT: item?.chR_SEC, chR_PER_SECT: item?.chR_PER_SECT, chR_CODE_PER_SECT: item?.chR_CODE_PER_SECT, nvchR_EQUIP_NAME: nil, nvchR_REASON_IN_OUT: LyDo, chR_USER_UPDATE: adid, chR_KHO_NHAN: khoNhan, vchR_BORROWER_PHONE_NUMBER: item?.vchR_BORROWER_PHONE_NUMBER, dtM_EXPECTED_RETURN_DATE: item?.dtM_EXPECTED_RETURN_DATE, id: item?.id, nvchR_RETURNER: TenNv, vchR_CODE_RETURNER: MaNv, vchR_RETURNER_PHONE_NUMBER: SDT, inT_QUANTITY_RETURN: Int(slTra), dtM_RETURN_DATE: NgayTra, vchR_BORROW_CODE: nil)
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        do {
+            let jsonData = try JSONEncoder().encode(requesBody)
+            request.httpBody = jsonData
+        } catch {
+            errorMessage = "Error encoding JSON: \(error)"
+            isLoading = false
+            completion(false)
+            return
+        }
+        URLSession.shared.dataTaskPublisher(for: request)
+            .tryMap { output in
+                guard let httpResponse = output.response as? HTTPURLResponse,
+                      (200...299).contains(httpResponse.statusCode) else {
+                    throw URLError(.badServerResponse)
+                }
+                return output.data
+            }
+            .decode(type: BorrowModel.self, decoder: JSONDecoder())
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] completionResult in
+                self?.isLoading = false
+                switch completionResult {
+                case .failure(let error):
+                    self?.errorMessage = error.localizedDescription
+                    completion(false)
+                case .finished:
+                    break
+                }
+            } receiveValue: { [weak self] response in
+                if response.success {
+                    self?.isLoading = false
+                    self?.isSuccess = true
+                    completion(false)
+                } else {
+                    self?.errorMessage = response.message ?? "Xuất kho thất bại"
+                    completion(false)
+                }
+            }
+            .store(in: &cancellables)
+    }
     
     // Reset
     func ResetFrom(){

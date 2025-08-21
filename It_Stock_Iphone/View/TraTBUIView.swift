@@ -19,6 +19,7 @@ struct TraTBUIView: View {
     
     //thong tin thiet bi tra
     let item: ListBorrowData?
+    let selectKho: String
 
     
     @Environment(\.dismiss) private var dismiss
@@ -67,8 +68,21 @@ struct TraTBUIView: View {
         }
         .onAppear {
             setupInitialDate()
+            setupInitialData()
         }
     }
+    // MARK: - Setup Initial Data
+       private func setupInitialData() {
+           // Thiết lập dữ liệu ban đầu từ item
+           xuatKhoVM.phanLoai = item?.nvchR_ITEM_NAME ?? ""
+           xuatKhoVM.LoaiHang = item?.chR_TYPE_GOODS ?? ""
+           
+           if let qtyInStock = item?.inT_QTY_IN_STOCK {
+               xuatKhoVM.slTon = String(qtyInStock)
+           } else {
+               xuatKhoVM.slTon = "0"
+           }
+       }
     // MARK: - Header View
     private var headerView: some View {
         HStack{
@@ -102,9 +116,7 @@ struct TraTBUIView: View {
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
                             .stroke(Color.blue.opacity(0.2), lineWidth: 1)
-                    ).onAppear{
-                        xuatKhoVM.phanLoai = item?.nvchR_ITEM_NAME ?? ""
-                    }
+                    )
             }
         }
     }
@@ -138,9 +150,7 @@ struct TraTBUIView: View {
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
                     .stroke(Color.blue.opacity(0.2), lineWidth: 1)
-            ).onAppear{
-                xuatKhoVM.LoaiHang = item?.chR_TYPE_GOODS ?? ""
-            }
+            )
         }
     }
     // MARK: - SL tồn, SL trả
@@ -160,13 +170,7 @@ struct TraTBUIView: View {
                     .overlay(
                         RoundedRectangle(cornerRadius: 10)
                             .stroke(Color.blue.opacity(0.2), lineWidth: 1)
-                    ).onAppear{
-                        if let qtyInStock = item?.inT_QTY_IN_STOCK {
-                            xuatKhoVM.slTon = String(qtyInStock)
-                        } else {
-                            xuatKhoVM.slTon = "0"
-                        }
-                    }
+                    )
             }
 
             // Số lượng xuất
@@ -340,6 +344,52 @@ struct TraTBUIView: View {
         .cornerRadius(16)
         .shadow(color: Color.blue.opacity(0.3), radius: 8, x: 0, y: 4)
         .disabled(isLoading)
+    }
+    // MARK: Event
+    private func submitXuatKho() {
+        // Validation and submission logic
+        guard !xuatKhoVM.phanLoai.isEmpty else {
+            xuatKhoVM.errorMessage = "Vui lòng nhập phân loại"
+            return
+        }
+        
+        guard !xuatKhoVM.LoaiHang.isEmpty else {
+            xuatKhoVM.errorMessage = "Vui lòng chọn kho nhận"
+            return
+        }
+        
+//        guard let quantity = Int(xuatKhoVM.slXuat), quantity > 0 else {
+//            xuatKhoVM.errorMessage = "Số lượng xuất phải là số nguyên dương"
+//            return
+//        }
+//        guard let ton = Int(xuatKhoVM.slTon) else {
+//            xuatKhoVM.errorMessage = "Giá trị nhập không hợp lệ"
+//            return
+//        }
+
+//        let total = ton - quantity
+//        guard total > 0 else {
+//            xuatKhoVM.errorMessage = "Số lượng xuất vượt quá số lượng tồn"
+//            return
+//        }
+//        xuatKhoVM.TongSl = total
+//        guard !xuatKhoVM.SDT.isEmpty else {
+//            xuatKhoVM.errorMessage = "Vui lòng nhập số điện thoại liên hệ"
+//            return
+//        }
+        guard !xuatKhoVM.LyDo.isEmpty else {
+            xuatKhoVM.errorMessage = "Vui lòng nhập lý do xuất kho"
+            return
+        }
+        
+        isLoading = true
+        // Call API or perform submission logic
+        xuatKhoVM.TraStock(stock: selectKho, adid: userDataManager.currentUser?.chR_ADID ?? "" , item: item){_ in
+            DispatchQueue.main.async {
+                isLoading = false
+                xuatKhoVM.ResetFrom()
+            }
+        }
     }
     // MARK: - Helper Functions
     private func handleBarcodeScanned(code: String) {

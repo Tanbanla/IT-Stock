@@ -21,15 +21,16 @@ enum Tab: String, CaseIterable, Identifiable {
 }
 struct MainUIView: View {
     @State private var selectedTab: Tab = .home
+    @State private var factorySelect: String = ""
     var body: some View {
         ZStack(alignment: .bottom) {
             // Nội dung chính
             TabView(selection: $selectedTab) {
-                HomeUIView()
+                HomeUIView(factorySelect: $factorySelect)
                     .tag(Tab.home)
                     .ignoresSafeArea(.all, edges: .bottom)
                 
-                ListBorrowUIView()
+                ListBorrowUIView(factorySelect: $factorySelect)
                     .tag(Tab.borrow)
                     .ignoresSafeArea(.all, edges: .bottom)
             }
