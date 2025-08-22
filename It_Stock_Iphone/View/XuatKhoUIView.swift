@@ -63,6 +63,12 @@ struct XuatKhoUIView: View {
                     .padding(.horizontal, 20)
                 }
                 .background(Color.white)
+                .gesture(
+                    TapGesture()
+                        .onEnded { _ in
+                            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                        }
+                )
             }
         }
         .alert("Lỗi", isPresented: .constant(xuatKhoVM.errorMessage != nil)) {
@@ -71,6 +77,13 @@ struct XuatKhoUIView: View {
             }
         } message: {
             Text(xuatKhoVM.errorMessage ?? "")
+        }
+        .alert("Thành công", isPresented: $xuatKhoVM.isSuccess) {
+            Button("OK") {
+                xuatKhoVM.ResetFrom()
+            }
+        } message: {
+            Text("Xuất thiết bị thành công")
         }
         .sheet(isPresented: $showScran) {
             BarcodeScannerView(viewModel: viewModel) { code in
@@ -612,6 +625,7 @@ struct XuatKhoUIView: View {
             xuatKhoVM.getPhanLoaiAPI(stockName: selectKho, code: code) {_ in 
                 DispatchQueue.main.async {
                     self.isLoading = false
+                    xuatKhoVM.IdGood = self.xuatKhoVM.data?.id ?? 0
                     xuatKhoVM.phanLoai = self.xuatKhoVM.data?.nvchR_ITEM_NAME ?? code
                     xuatKhoVM.slTon = String((self.xuatKhoVM.data?.inT_QTY_OLD ?? 0) + (self.xuatKhoVM.data?.inT_QTY_OLD ?? 0))
                 }
@@ -666,6 +680,14 @@ struct XuatKhoUIView: View {
             xuatKhoVM.errorMessage = "Ngày trả không được vượt quá 3 tháng so với ngày xuất"
             return
         }
+        guard !xuatKhoVM.TenNv.isEmpty else {
+            xuatKhoVM.errorMessage = "Vui lòng không bỏ trống tên nhân viên"
+            return
+        }
+        guard !xuatKhoVM.MaNv.isEmpty else {
+            xuatKhoVM.errorMessage = "Yêu cầu nhập mã nhân viên"
+            return
+        }
         guard !xuatKhoVM.LyDo.isEmpty else {
             xuatKhoVM.errorMessage = "Vui lòng nhập lý do xuất kho"
             return
@@ -676,7 +698,7 @@ struct XuatKhoUIView: View {
         xuatKhoVM.MuonOrXuat(stock: selectKho, adid: userDataManager.currentUser?.chR_ADID ?? "", SectionAdid: userDataManager.currentUser?.chR_COST_CENTER ?? ""){_ in
             DispatchQueue.main.async {
                 isLoading = false
-                xuatKhoVM.ResetFrom()
+                //xuatKhoVM.ResetFrom()
             }
         }
     }

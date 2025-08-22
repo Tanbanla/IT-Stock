@@ -74,7 +74,7 @@ class XuatKhoViewModel: ObservableObject {
                     // Try to parse error message from response
                     if let errorString = String(data: output.data, encoding: .utf8) {
                         throw NSError(domain: "", code: httpResponse.statusCode,
-                                    userInfo: [NSLocalizedDescriptionKey: "Server error: \(errorString)"])
+                                      userInfo: [NSLocalizedDescriptionKey: "Server error: \(errorString)"])
                     } else {
                         throw URLError(URLError.Code(rawValue: httpResponse.statusCode))
                     }
@@ -94,6 +94,7 @@ class XuatKhoViewModel: ObservableObject {
                         break
                     case .failure(let error):
                         self?.errorMessage = "Lỗi: \(error.localizedDescription)"
+                        self?.isSuccess = false
                         print("API Error: \(error)")
                         completion(false)
                     }
@@ -101,7 +102,7 @@ class XuatKhoViewModel: ObservableObject {
                 receiveValue: { [weak self] response in
                     if response.success {
                         self?.data = response.data
-                        self?.isSuccess = true
+                        //self?.isSuccess = true
                         completion(true)
                     } else {
                         self?.errorMessage = response.message ?? "Không tìm thấy dữ liệu phân loại"
@@ -183,7 +184,7 @@ class XuatKhoViewModel: ObservableObject {
                     // Nếu status code không thành công, thử parse error message
                     if let errorString = String(data: output.data, encoding: .utf8) {
                         throw NSError(domain: "", code: httpResponse.statusCode,
-                                    userInfo: [NSLocalizedDescriptionKey: "Server error: \(errorString)"])
+                                      userInfo: [NSLocalizedDescriptionKey: "Server error: \(errorString)"])
                     } else {
                         throw URLError(URLError.Code(rawValue: httpResponse.statusCode))
                     }
@@ -209,7 +210,7 @@ class XuatKhoViewModel: ObservableObject {
                 receiveValue: { [weak self] response in
                     if response.success {
                         self?.dataUser = response.data
-                        self?.isSuccess = true
+                        //self?.isSuccess = true
                         completion(true)
                     } else {
                         self?.errorMessage = response.message ?? "Không tìm thấy thông tin người dùng"
@@ -227,14 +228,14 @@ class XuatKhoViewModel: ObservableObject {
         if loai == "Xuất kho"{
             XuatStock(stock: stock, adid: adid, SectionAdid: SectionAdid) { success in
                 completion(success)
-             }
+            }
         }else if loai == "Cho mượn"{
             MuonStock(stock: stock, adid: adid, SectionAdid: SectionAdid) { success in
                 completion(success)
+            }
         }
-    }
-    
-    // Mượn
+        
+        // Mượn
         func MuonStock(stock: String, adid: String, SectionAdid: String,completion: @escaping (Bool) -> Void){
             isLoading = true
             errorMessage = nil
@@ -251,8 +252,12 @@ class XuatKhoViewModel: ObservableObject {
                 typeGood = "N"
             }else{
                 typeGood = "R"
-            }//chR_PER_SECT, nvchR_EQUIP_NAME chưa xác định
-            let requesBody = BorrowData(iD_GOODS: IdGood, nvchR_ITEM_NAME: phanLoai, chR_KHO: stock, chR_KIND_IN_OUT: "R", chR_TYPE_GOODS: typeGood, inT_QTY_IN_OUT: Int(slXuat), inT_QTY_IN_STOCK: nil, dtM_DATE_IN_OUT: NgayXuat, chR_PER_IT: adid, chR_SECT: SectionAdid, chR_PER_SECT: TenNv, chR_CODE_PER_SECT: MaNv, nvchR_EQUIP_NAME: nil, nvchR_REASON_IN_OUT: LyDo, chR_USER_UPDATE: adid, chR_KHO_NHAN: khoNhan, vchR_BORROWER_PHONE_NUMBER: SDT, dtM_EXPECTED_RETURN_DATE: NgayTra, id: nil, nvchR_RETURNER: nil, vchR_CODE_RETURNER: nil, vchR_RETURNER_PHONE_NUMBER: nil, inT_QUANTITY_RETURN: nil, dtM_RETURN_DATE: nil, vchR_BORROW_CODE: nil)
+            }
+            
+            let xuat = convertDateFormat(from: NgayXuat)
+            let tra = convertDateFormat(from: NgayTra)
+            
+            let requesBody = BorrowData(iD_GOODS: IdGood, nvchR_ITEM_NAME: phanLoai, chR_KHO: stock, chR_KIND_IN_OUT: "R", chR_TYPE_GOODS: typeGood, inT_QTY_IN_OUT: Int(slXuat), inT_QTY_IN_STOCK: nil, dtM_DATE_IN_OUT: xuat, chR_PER_IT: adid, chR_SECT: SectionAdid, chR_PER_SECT: TenNv, chR_CODE_PER_SECT: MaNv, nvchR_EQUIP_NAME: nil, nvchR_REASON_IN_OUT: LyDo, chR_USER_UPDATE: adid, chR_KHO_NHAN: khoNhan, vchR_BORROWER_PHONE_NUMBER: SDT, dtM_EXPECTED_RETURN_DATE: tra, id: nil, nvchR_RETURNER: nil, vchR_CODE_RETURNER: nil, vchR_RETURNER_PHONE_NUMBER: nil, inT_QUANTITY_RETURN: nil, dtM_RETURN_DATE: nil)
             var request = URLRequest(url: url)
             request.httpMethod = "POST"
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -274,7 +279,7 @@ class XuatKhoViewModel: ObservableObject {
                     }
                     return output.data
                 }
-                .decode(type: BorrowModel.self, decoder: JSONDecoder())
+                .decode(type: ReturnData.self, decoder: JSONDecoder())
                 .receive(on: DispatchQueue.main)
                 .sink { [weak self] completionResult in
                     self?.isLoading = false
@@ -298,50 +303,6 @@ class XuatKhoViewModel: ObservableObject {
                 .store(in: &cancellables)
         }
     }
-//    int IDgoods = IDhang;
-//    string tenhang = txtItemName.Text; // tên hàng (phân loại)
-//    string kho = cboStock.Text; // vị trí kho
-//    string TypeEX = cboTypeXuat.Text.Substring(0, 1);
-//    string typeHang = cboItemName.Text.Substring(0, 1); // Hàng tái sử dụng
-//    int QTy = Convert.ToInt32(txtQty.Text); // số lượng nhập xuất
-//    int Qtykho = 0;  // Không tính toán ở đây. Lấy dữ liệu từ kho xử lý trong StoreProcedure.
-//    string Date = dateXuat.Value.ToString("yyy-MM-dd"); // ngày nhập xuất
-//    string PerIT = Common.tmpUser.CHR_ADID; // người nhập xuất
-//    string Sectcode = cboSectoExport.Text; // phòng ban xuất
-//    string PerEX = txtEmployName.Text; // Người phòng ban
-//    string CodePerEX = txtEmployeeID.Text; // mã nhân viên người phòng ban
-//    string EQupName = txtEquipName.Text; // tên thiết bị
-//    string Reason = txtReasonExport.Text; // lý do nhập xuất
-//    string User = Common.tmpUser.CHR_ADID
-
-    
-    
-    // Mượn
-//         string borrowPhoneNumber = txtBorrowPhoneNumber.Text; // SĐT người mượn
-//         string expectedReturnDate = dtmExpectedReturnDate.Value.ToString("yyyy-MM-dd"); // Ngày dự kiến tra
-    
-    
-    
-// Trả lại
-//    id = Convert.ToInt32(ID.Text);
-//    idGoods = Convert.ToInt32(IDGoods.Text);
-//    kho = Kho.Text; // Kho
-//    if (cboLoaiHangReturn.Text == "Hàng mới") typeGoods = "N";
-//    else if (cboLoaiHangReturn.Text == "Hàng tái sử dụng") typeGoods = "R";
-//    else typeGoods = string.Empty;
-//    tenHang = cboPhanLoaiReturn.Text;
-//    maNVTra = textBoxMaNVReturn.Text; // Nv người trả
-//    tenNVTra = textBoxTenNVReturn.Text; // Tên người trả
-//    sdtNVTra = textBoxSDTNVReturn.Text; // SĐT người trả
-//    soLuongTra = Convert.ToInt32(textBoxSLTraReturn.Text); // SL trả
-//    returnDate = dateTimePickerNgayTraReturn.Value.ToString("yyyy-MM-dd"); // Ngày thực trả
-//    if (soLuongTra <= 0) MessageBox.Show(Common.GetFromResource("MSG_NG_QUANTITY_RETURN_EMPTY"));
-//    nguoiThaoTac = txtNguoiThaoTac.Text; // Người thao tác
-//    txtLabelSect = labelSect.Text;
-//    txtlabelPerSect = labelPerSect.Text;
-//    txtLabelCodePerSect = labelCodePerSect.Text;
-//    txtLabelReasonInOut = labelReasonInOut.Text;
-//    txtLabelBorrowerPhoneNumber = labelBorrowerPhoneNumber.Text;
     // Xuất
     func XuatStock(stock: String, adid: String, SectionAdid: String,completion: @escaping (Bool) -> Void){
         isLoading = true
@@ -360,7 +321,10 @@ class XuatKhoViewModel: ObservableObject {
         }else{
             typeGood = "R"
         }
-        let requesBody = BorrowData(iD_GOODS: IdGood, nvchR_ITEM_NAME: phanLoai, chR_KHO: stock, chR_KIND_IN_OUT: "O", chR_TYPE_GOODS: typeGood, inT_QTY_IN_OUT: Int(slXuat), inT_QTY_IN_STOCK: nil, dtM_DATE_IN_OUT: NgayXuat, chR_PER_IT: adid, chR_SECT: SectionAdid, chR_PER_SECT: TenNv, chR_CODE_PER_SECT: MaNv, nvchR_EQUIP_NAME: nil, nvchR_REASON_IN_OUT: LyDo, chR_USER_UPDATE: adid, chR_KHO_NHAN: khoNhan, vchR_BORROWER_PHONE_NUMBER: nil, dtM_EXPECTED_RETURN_DATE: nil, id: nil, nvchR_RETURNER: nil, vchR_CODE_RETURNER: nil, vchR_RETURNER_PHONE_NUMBER: nil, inT_QUANTITY_RETURN: nil, dtM_RETURN_DATE: nil, vchR_BORROW_CODE: nil)
+        
+        let xuat = convertDateFormat(from: NgayXuat)
+        
+        let requesBody = BorrowData(iD_GOODS: IdGood, nvchR_ITEM_NAME: phanLoai, chR_KHO: stock, chR_KIND_IN_OUT: "O", chR_TYPE_GOODS: typeGood, inT_QTY_IN_OUT: Int(slXuat), inT_QTY_IN_STOCK: nil, dtM_DATE_IN_OUT: xuat, chR_PER_IT: adid, chR_SECT: SectionAdid, chR_PER_SECT: TenNv, chR_CODE_PER_SECT: MaNv, nvchR_EQUIP_NAME: nil, nvchR_REASON_IN_OUT: LyDo, chR_USER_UPDATE: adid, chR_KHO_NHAN: khoNhan, vchR_BORROWER_PHONE_NUMBER: nil, dtM_EXPECTED_RETURN_DATE: nil, id: nil, nvchR_RETURNER: nil, vchR_CODE_RETURNER: nil, vchR_RETURNER_PHONE_NUMBER: nil, inT_QUANTITY_RETURN: nil, dtM_RETURN_DATE: nil)
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -382,7 +346,7 @@ class XuatKhoViewModel: ObservableObject {
                 }
                 return output.data
             }
-            .decode(type: BorrowModel.self, decoder: JSONDecoder())
+            .decode(type: ReturnData.self, decoder: JSONDecoder())
             .receive(on: DispatchQueue.main)
             .sink { [weak self] completionResult in
                 self?.isLoading = false
@@ -423,7 +387,7 @@ class XuatKhoViewModel: ObservableObject {
         }else{
             typeGood = "R"
         }// Cần xác nhận vchR_BORROW_CODE
-        let requesBody = BorrowData(iD_GOODS: Int(item?.iD_GOODS ?? "0"), nvchR_ITEM_NAME: phanLoai, chR_KHO: stock, chR_KIND_IN_OUT: "R", chR_TYPE_GOODS: typeGood, inT_QTY_IN_OUT: item?.inT_QTY_IN_OUT, inT_QTY_IN_STOCK: item?.inT_QTY_IN_STOCK, dtM_DATE_IN_OUT: item?.dtM_DATE_IN_OUT, chR_PER_IT: item?.chR_PER_IT, chR_SECT: item?.chR_SEC, chR_PER_SECT: item?.chR_PER_SECT, chR_CODE_PER_SECT: item?.chR_CODE_PER_SECT, nvchR_EQUIP_NAME: nil, nvchR_REASON_IN_OUT: LyDo, chR_USER_UPDATE: adid, chR_KHO_NHAN: khoNhan, vchR_BORROWER_PHONE_NUMBER: item?.vchR_BORROWER_PHONE_NUMBER, dtM_EXPECTED_RETURN_DATE: item?.dtM_EXPECTED_RETURN_DATE, id: item?.id, nvchR_RETURNER: TenNv, vchR_CODE_RETURNER: MaNv, vchR_RETURNER_PHONE_NUMBER: SDT, inT_QUANTITY_RETURN: Int(slTra), dtM_RETURN_DATE: NgayTra, vchR_BORROW_CODE: nil)
+        let requesBody = BorrowData(iD_GOODS: Int(item?.iD_GOODS ?? "0"), nvchR_ITEM_NAME: phanLoai, chR_KHO: item?.chR_KHO, chR_KIND_IN_OUT: "R", chR_TYPE_GOODS: typeGood, inT_QTY_IN_OUT: item?.inT_QTY_IN_OUT, inT_QTY_IN_STOCK: item?.inT_QTY_IN_STOCK, dtM_DATE_IN_OUT: item?.dtM_DATE_IN_OUT, chR_PER_IT: item?.chR_PER_IT, chR_SECT: item?.chR_SEC, chR_PER_SECT: item?.chR_PER_SECT, chR_CODE_PER_SECT: item?.chR_CODE_PER_SECT, nvchR_EQUIP_NAME: nil, nvchR_REASON_IN_OUT: LyDo, chR_USER_UPDATE: adid, chR_KHO_NHAN: khoNhan, vchR_BORROWER_PHONE_NUMBER: item?.vchR_BORROWER_PHONE_NUMBER, dtM_EXPECTED_RETURN_DATE: item?.dtM_EXPECTED_RETURN_DATE, id: item?.id, nvchR_RETURNER: TenNv, vchR_CODE_RETURNER: MaNv, vchR_RETURNER_PHONE_NUMBER: SDT, inT_QUANTITY_RETURN: Int(slTra), dtM_RETURN_DATE: NgayTra)
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -445,12 +409,13 @@ class XuatKhoViewModel: ObservableObject {
                 }
                 return output.data
             }
-            .decode(type: BorrowModel.self, decoder: JSONDecoder())
+            .decode(type: ReturnData.self, decoder: JSONDecoder())
             .receive(on: DispatchQueue.main)
             .sink { [weak self] completionResult in
                 self?.isLoading = false
                 switch completionResult {
                 case .failure(let error):
+                    self?.isSuccess = false
                     self?.errorMessage = error.localizedDescription
                     completion(false)
                 case .finished:
@@ -462,13 +427,28 @@ class XuatKhoViewModel: ObservableObject {
                     self?.isSuccess = true
                     completion(false)
                 } else {
+                    self?.isSuccess = false
                     self?.errorMessage = response.message ?? "Xuất kho thất bại"
                     completion(false)
                 }
             }
             .store(in: &cancellables)
     }
-    
+    // formart dd/MM/yyyy to yyyy-MM-dd
+    func convertDateFormat(from input: String) -> String? {
+        let inputFormatter = DateFormatter()
+        inputFormatter.dateFormat = "dd/MM/yyyy"
+        inputFormatter.locale = Locale(identifier: "en_US_POSIX")
+        
+        if let date = inputFormatter.date(from: input) {
+            let outputFormatter = DateFormatter()
+            outputFormatter.dateFormat = "yyyy-MM-dd"
+            outputFormatter.locale = Locale(identifier: "en_US_POSIX")
+            return outputFormatter.string(from: date)
+        } else {
+            return nil
+        }
+    }
     // Reset
     func ResetFrom(){
         phanLoai = ""
@@ -476,9 +456,9 @@ class XuatKhoViewModel: ObservableObject {
         khoNhan = ""
         LoaiHang = ""
         slTon = "0"
-        slXuat = "0"
-        NgayXuat = ""
-        NgayTra = ""
+        slXuat = ""
+        //NgayXuat = ""
+        //NgayTra = ""
         MaNv = ""
         TenNv = ""
         SDT = ""

@@ -86,7 +86,14 @@ struct LogInUIView: View {
                 }
                 Spacer()
                 Image("logo_company").resizable().frame(width: 300, height: 130)
-            }.fullScreenCover(isPresented: $showMainView) {
+            }
+            .gesture(
+                TapGesture()
+                    .onEnded { _ in
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                    }
+            )
+            .fullScreenCover(isPresented: $showMainView) {
                 MainUIView() //$viewModel.isLoggedIn
             }
             .alert("Lỗi", isPresented: .constant(viewModel.errorMessage != nil)) {

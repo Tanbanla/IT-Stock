@@ -48,18 +48,18 @@ struct HomeUIView: View {
         .fullScreenCover(isPresented: $showExportView) {
             XuatKhoUIView(listKho: xuatKhoVM.ListStock ?? [], selectKho: factorySelect)
                 .onAppear {
-                        xuatKhoVM.getListFactory(section: "3510")
+                    xuatKhoVM.getListFactory(section: userDataManager.currentUser?.chR_COST_CENTER ?? "" )
                 }
         }
         .fullScreenCover(isPresented: $showImportView) {
-            NhapKhoUIView(selectKho: factorySelect, section: "3510", adid: "khanhmf")
+            NhapKhoUIView(selectKho: factorySelect, section: userDataManager.currentUser?.chR_COST_CENTER ?? "", adid: userDataManager.currentUser?.chR_ADID ?? "")
         }
         .fullScreenCover(isPresented: $showCheckView) {
-            KiemKeUIView()
+            KiemKeUIView(selectKho: factorySelect)
         }
         .onAppear {
             //userDataManager.currentUser?.chR_COST_CENTER 
-            factoryVM.fetchFactories(section: "3510")
+            factoryVM.fetchFactories(section: userDataManager.currentUser?.chR_COST_CENTER ?? "" )
         }
     }
     
@@ -104,13 +104,13 @@ struct HomeUIView: View {
                 .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
             
             VStack(alignment: .leading, spacing: 4) {
-//                Text(userDataManager.currentUser?.nvchR_NAME ?? "Không xác định")
-//                    .font(.system(size: 18, weight: .bold))
-//                    .foregroundColor(.primary)
-//                
-//                Text(userDataManager.currentUser?.chR_COST_CENTER ?? "Không xác định")
-//                    .font(.system(size: 14, weight: .medium))
-//                    .foregroundColor(.blue)
+                Text(userDataManager.currentUser?.nvchR_NAME ?? "Không xác định")
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundColor(.primary)
+                
+                Text(userDataManager.currentUser?.chR_COST_CENTER ?? "Không xác định")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.blue)
             }
             
             Spacer()
@@ -248,7 +248,7 @@ struct HomeUIView: View {
                     if factorySelect != "" {
                         showCheckView.toggle()
                     } else {
-                        showCheckView = true
+                        showMessage = true
                     }
                 }
             )

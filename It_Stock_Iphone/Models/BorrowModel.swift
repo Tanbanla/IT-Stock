@@ -37,6 +37,11 @@ struct BorrowData: Codable {
     let vchR_RETURNER_PHONE_NUMBER: String?
     let inT_QUANTITY_RETURN: Int?
     let dtM_RETURN_DATE: String?
-    let vchR_BORROW_CODE: String?
 }
-
+struct ReturnData: Codable {
+    let success: Bool
+    let status: Int
+    let message: String?
+    let error: String?
+    let data: Int?
+}

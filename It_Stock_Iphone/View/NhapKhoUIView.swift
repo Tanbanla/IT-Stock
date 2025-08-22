@@ -60,6 +60,12 @@ struct NhapKhoUIView: View {
                     .padding(.horizontal, 20)
                 }
                 .background(Color.white)
+                .gesture(
+                    TapGesture()
+                        .onEnded { _ in
+                            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                        }
+                )
             }
         }
         .alert("Thành công", isPresented: $masterGoodVM.isSuccess) {

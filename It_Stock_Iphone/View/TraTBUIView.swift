@@ -51,6 +51,12 @@ struct TraTBUIView: View {
                         confirmButton
                     }
                 }.padding(.horizontal, 20)
+                .gesture(
+                    TapGesture()
+                        .onEnded { _ in
+                            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                        }
+                )
             }
         }
         .alert("Lỗi", isPresented: .constant(xuatKhoVM.errorMessage != nil)) {
@@ -59,6 +65,13 @@ struct TraTBUIView: View {
             }
         } message: {
             Text(xuatKhoVM.errorMessage ?? "")
+        }
+        .alert("Thành công", isPresented: $xuatKhoVM.isSuccess) {
+            Button("OK") {
+                xuatKhoVM.ResetFrom()
+            }
+        } message: {
+            Text("Trả thiết bị thành công")
         }
         .sheet(isPresented: $showScran) {
             BarcodeScannerView(viewModel: viewModel) { code in
@@ -221,7 +234,12 @@ struct TraTBUIView: View {
                     .overlay(
                         RoundedRectangle(cornerRadius: 10)
                             .stroke(Color.blue.opacity(0.2), lineWidth: 1)
-                    )
+                    ).onAppear{
+                        let date = Date()
+                        let formatter = DateFormatter()
+                        formatter.dateFormat = "yyyy-MM-dd"
+                        xuatKhoVM.NgayTra = formatter.string(from: date)
+                    }
             }
         }
     }
@@ -323,7 +341,7 @@ struct TraTBUIView: View {
     // MARK: - Confirm Button
     private var confirmButton: some View {
         Button {
-            
+            submitTra()
         } label: {
             if isLoading {
                 ProgressView()
@@ -346,7 +364,7 @@ struct TraTBUIView: View {
         .disabled(isLoading)
     }
     // MARK: Event
-    private func submitXuatKho() {
+    private func submitTra() {
         // Validation and submission logic
         guard !xuatKhoVM.phanLoai.isEmpty else {
             xuatKhoVM.errorMessage = "Vui lòng nhập phân loại"
@@ -357,28 +375,20 @@ struct TraTBUIView: View {
             xuatKhoVM.errorMessage = "Vui lòng chọn kho nhận"
             return
         }
-        
-//        guard let quantity = Int(xuatKhoVM.slXuat), quantity > 0 else {
-//            xuatKhoVM.errorMessage = "Số lượng xuất phải là số nguyên dương"
-//            return
-//        }
-//        guard let ton = Int(xuatKhoVM.slTon) else {
-//            xuatKhoVM.errorMessage = "Giá trị nhập không hợp lệ"
-//            return
-//        }
-
-//        let total = ton - quantity
-//        guard total > 0 else {
-//            xuatKhoVM.errorMessage = "Số lượng xuất vượt quá số lượng tồn"
-//            return
-//        }
-//        xuatKhoVM.TongSl = total
-//        guard !xuatKhoVM.SDT.isEmpty else {
-//            xuatKhoVM.errorMessage = "Vui lòng nhập số điện thoại liên hệ"
-//            return
-//        }
-        guard !xuatKhoVM.LyDo.isEmpty else {
-            xuatKhoVM.errorMessage = "Vui lòng nhập lý do xuất kho"
+        guard !xuatKhoVM.TenNv.isEmpty else {
+            xuatKhoVM.errorMessage = "Vui lòng không bỏ trống tên nhân viên"
+            return
+        }
+        guard !xuatKhoVM.MaNv.isEmpty else {
+            xuatKhoVM.errorMessage = "Yêu cầu nhập mã nhân viên"
+            return
+        }
+        guard let tra = Int(xuatKhoVM.slTra) else {
+            xuatKhoVM.errorMessage = "Giá trị nhập không hợp lệ"
+            return
+        }
+        guard tra > 0 else {
+            xuatKhoVM.errorMessage = "Số lượng trả không hợp lệ"
             return
         }
         
@@ -388,6 +398,7 @@ struct TraTBUIView: View {
             DispatchQueue.main.async {
                 isLoading = false
                 xuatKhoVM.ResetFrom()
+                dismiss()
             }
         }
     }

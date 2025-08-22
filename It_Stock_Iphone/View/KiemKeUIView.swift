@@ -10,11 +10,12 @@ import SwiftUI
 struct KiemKeUIView: View {
     @StateObject private var viewModel = BarcodeScannerViewModel()
     @StateObject private var kiemKeVM = KiemKeViewModel()
-    @State private var currentDate: String = ""
-    @State private var formattedDate: String = ""
+    @EnvironmentObject var userDataManager: UserDataManager
     @State private var lyDo: String = ""
     @State private var showScran: Bool = false
     @Environment(\.dismiss) private var dismiss
+    
+    let selectKho: String
     
     var body: some View {
         ZStack {
@@ -51,6 +52,12 @@ struct KiemKeUIView: View {
                     //.padding(.vertical, 20)
                 }
                 .background(Color.white)
+                .gesture(
+                    TapGesture()
+                        .onEnded { _ in
+                            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                        }
+                )
             }
             .ignoresSafeArea(edges: .bottom)
         }
@@ -61,13 +68,30 @@ struct KiemKeUIView: View {
         } message: {
             Text(kiemKeVM.errorMessage ?? "")
         }
+        .alert("Thành công", isPresented: $kiemKeVM.isSuccess) {
+            Button("OK") {
+                kiemKeVM.ResetFrom()
+                lyDo = ""
+            }
+        } message: {
+            Text("Kiểm kê thiết bị thành công")
+        }
         .sheet(isPresented: $showScran) {
             BarcodeScannerView(viewModel: viewModel) { code in
-                // Handle barcode result
+                handleBarcodeScanned(code: code)
+                showScran = false
             }
         }
+        .onAppear {
+            setupInitialDate()
+        }
     }
-    
+    private func setupInitialDate() {
+        let date = Date()
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        kiemKeVM.NgayKiemKe = formatter.string(from: date)
+    }
     // MARK: - Header View
     private var headerView: some View {
         HStack {
@@ -105,7 +129,7 @@ struct KiemKeUIView: View {
                 .foregroundColor(.blue)
             
             HStack(spacing: 12) {
-                TextField("Quét mã vạch", text: .constant(""))
+                TextField("Quét mã vạch", text: $kiemKeVM.phanLoai)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 14)
                     .background(Color.blue.opacity(0.08))
@@ -124,7 +148,6 @@ struct KiemKeUIView: View {
                         .font(.system(size: 22))
                         .foregroundColor(.white)
                         .frame(width: 50, height: 50)
-                        //.background(LinearGradient(colors: [.blue, .purple], startPoint: .topLeading, endPoint: .bottomTrailing))
                         .background(Color.blue)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
@@ -185,7 +208,8 @@ struct KiemKeUIView: View {
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.blue)
                 
-                TextField("", text: .constant(""))
+                Text(kiemKeVM.slMax)
+                    .frame(minWidth: 50, minHeight: 22)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 12)
                     .background(Color.blue.opacity(0.08))
@@ -203,7 +227,8 @@ struct KiemKeUIView: View {
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.blue)
                 
-                TextField("", text: .constant(""))
+                Text(kiemKeVM.slMin)
+                    .frame(minWidth: 50, minHeight: 22)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 12)
                     .background(Color.blue.opacity(0.08))
@@ -221,7 +246,8 @@ struct KiemKeUIView: View {
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.blue)
                 
-                TextField("", text: .constant(""))
+                Text(kiemKeVM.slTon)
+                    .frame(minWidth: 50, minHeight: 22)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 12)
                     .background(Color.blue.opacity(0.08))
@@ -244,7 +270,7 @@ struct KiemKeUIView: View {
                         .foregroundColor(.red)
                 }
                 
-                TextField("", text: .constant(""))
+                TextField("0", text: $kiemKeVM.slKiemKe)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 12)
                     .background(Color.blue.opacity(0.08))
@@ -254,6 +280,18 @@ struct KiemKeUIView: View {
                             .stroke(Color.blue.opacity(0.2), lineWidth: 1)
                     )
                     .keyboardType(.numberPad)
+                    .onChange(of: kiemKeVM.slKiemKe) { newValue in
+                        let ton = Int(kiemKeVM.slTon) ?? 0
+                        let kiemKe = Int(newValue) ?? 0
+                        let lech = ton - kiemKe
+                        kiemKeVM.slLech = String(lech)
+                    }
+                    .onAppear {
+                        let ton = Int(kiemKeVM.slTon) ?? 0
+                        let kiemKe = Int(kiemKeVM.slKiemKe) ?? 0
+                        let lech = ton - kiemKe
+                        kiemKeVM.slLech = String(lech)
+                    }
             }
         }
     }
@@ -265,19 +303,33 @@ struct KiemKeUIView: View {
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(.blue)
             
-            TextField("", text: .constant(""))
+            TextField("", text: $kiemKeVM.slLech)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 14)
-                .background(Color.blue.opacity(0.08))
+                .background(backgroundColor)
                 .cornerRadius(12)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.blue.opacity(0.2), lineWidth: 1)
+                        .stroke(borderColor, lineWidth: 1)
                 )
                 .disabled(true) // Read-only
         }
     }
-    
+    private var backgroundColor: Color {
+        let ton = Int(kiemKeVM.slTon) ?? 0
+        let kiemKe = Int(kiemKeVM.slKiemKe) ?? 0
+        let lech = ton - kiemKe
+        
+        return lech != 0 ? Color.red.opacity(0.08) : Color.blue.opacity(0.08)
+    }
+
+    private var borderColor: Color {
+        let ton = Int(kiemKeVM.slTon) ?? 0
+        let kiemKe = Int(kiemKeVM.slKiemKe) ?? 0
+        let lech = ton - kiemKe
+        
+        return lech != 0 ? Color.red.opacity(0.3) : Color.blue.opacity(0.2)
+    }
     // MARK: - Lý Do Section
     private var lyDoSection: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -310,37 +362,89 @@ struct KiemKeUIView: View {
                                 .allowsHitTesting(false)
                         }
                     }
-                )
+                ).onAppear{
+                    kiemKeVM.Lydo = lyDo
+                }
+                .onChange(of: lyDo) { newValue in
+                    kiemKeVM.Lydo = lyDo
+                }
         }
     }
     
     // MARK: - Confirm Button
     private var confirmButton: some View {
         Button {
-            // Handle confirm action
+            submitInv()
         } label: {
-            HStack {
-                Image(systemName: "checkmark.circle.fill").foregroundStyle(.white)
-                Text("XÁC NHẬN")
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(.white)
+            if kiemKeVM.isLoading{
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 56)
+                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                    .scaleEffect(1.2)
+            }else{
+                HStack {
+                    Image(systemName: "checkmark.circle.fill").foregroundStyle(.white)
+                    Text("XÁC NHẬN")
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundColor(.white)
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 56)
+                .background(Color.blue)
+                .cornerRadius(16)
+                .shadow(color: Color.blue.opacity(0.3), radius: 8, x: 0, y: 4)
             }
-            .frame(maxWidth: .infinity)
-            .frame(height: 56)
-//            .background(
-//                LinearGradient(
-//                    colors: [.blue, .purple],
-//                    startPoint: .leading,
-//                    endPoint: .trailing
-//                )
-//            )
-            .background(Color.blue)
-            .cornerRadius(16)
-            .shadow(color: Color.blue.opacity(0.3), radius: 8, x: 0, y: 4)
         }
         .padding(.top, 10)
     }
+    // MARK: - Helper Functions
+    private func handleBarcodeScanned(code: String) {
+        // Handle barcode scanning logic
+        kiemKeVM.getPhanLoaiAPI(stockName: selectKho, code: code) {_ in
+            DispatchQueue.main.async {
+                kiemKeVM.phanLoai = kiemKeVM.data?.nvchR_ITEM_NAME ?? code
+                kiemKeVM.slMin = String(kiemKeVM.data?.inT_MIN ?? 0)
+                kiemKeVM.slMax = String(kiemKeVM.data?.inT_MAX ?? 0)
+                
+                let old = Int(kiemKeVM.data?.inT_QTY_OLD ?? 0);
+                let new = Int(kiemKeVM.data?.inT_QTY_NEW ?? 0);
+                let total = old + new
+                kiemKeVM.slTon = String(total)
+            }
+        }
+    }
+    private func submitInv() {
+        // Validation and submission logic
+        guard !kiemKeVM.LoaiHang.isEmpty else {
+            kiemKeVM.errorMessage = "Vui lòng chọn loại kiểm kê"
+            return
+        }
+        
+        guard !kiemKeVM.phanLoai.isEmpty else {
+            kiemKeVM.errorMessage = "Vui lòng quét mã vạch sản phẩm"
+            return
+        }
+        
+        guard !lyDo.isEmpty else {
+            kiemKeVM.errorMessage = "Vui lòng nhập lý do kiểm kê"
+            return
+        }
+        
+        guard let quantity = Int(kiemKeVM.slKiemKe), quantity > 0 else {
+            kiemKeVM.errorMessage = "Số lượng xuất phải là số nguyên dương"
+            return
+        }
+        kiemKeVM.isLoading = true
+        // Call API or perform submission logic
+        kiemKeVM.InventoryStock(stock: selectKho, adid: userDataManager.currentUser?.chR_ADID ?? "") { _ in
+            DispatchQueue.main.async {
+                kiemKeVM.isLoading = false
+                
+            }
+        }
+    }
 }
-#Preview {
-    KiemKeUIView()
-}
+//#Preview {
+//    KiemKeUIView(selectKho: "BINV-F1")
+//}

@@ -40,31 +40,14 @@ class ApiLink{
     var MasterByCode: String{
         return baseUrl + "MasterGood/get-by-code"
     }
+    // Inventory
+    var Inventory: String{
+        return baseUrl + "Inventory/update-inventory"
+    }
     //user
     var UserBySystem: String{
         return baseUrl + "User/get-by-adid"
     }
-    //http://172.26.248.62:8502/api/User/get-by-adid?adid=khanhmf
-//    {
-//      "id": 56,
-//      "chR_USERID": "khanhmf",
-//      "chR_EMLPLOYEEID": "M0114622",
-//      "chR_ADID": "khanhmf",
-//      "nvchR_NAME": "Nguyễn Duy Khánh",
-//      "chR_PASS": "123456",
-//      "inT_USERID_COMMON": 0,
-//      "chR_SEC_CODE": "3500",
-//      "chR_EMAIL": "khanhmf@brothergroud.net",
-//      "dtM_LAST_LOGIN": null,
-//      "inT_LOCK": null,
-//      "chR_USER_CREATE": null,
-//      "dtM_DATE_CREATE": null,
-//      "chR_USER_UPDATE": null,
-//      "dtM_DATE_UPDATE": null,
-//      "chR_TELL": "2075",
-//      "inT_LOCK_DAY": 30,
-//      "chR_COST_CENTER": "3510"
-//    }
     var UserAdidOrID: String{
         return baseUrl + "User/get-employee-from-agentdb-by-adid-or-employee-id"
     }
