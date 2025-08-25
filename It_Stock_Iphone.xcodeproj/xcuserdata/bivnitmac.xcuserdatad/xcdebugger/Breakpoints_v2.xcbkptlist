@@ -7,113 +7,81 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "58F32FB1-4F08-4966-9752-E9A595A1A332"
-            shouldBeEnabled = "Yes"
+            uuid = "B4509AB8-4DAF-446A-9774-905FDD108DDB"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "It_Stock_Iphone/ViewModels/KiemKeViewModel.swift"
+            filePath = "It_Stock_Iphone/View/HomeUIView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "142"
-            endingLineNumber = "142"
-            landmarkName = "InventoryStock(stock:adid:completion:)"
-            landmarkType = "7">
+            startingLineNumber = "108"
+            endingLineNumber = "108"
+            landmarkName = "userInfoCard"
+            landmarkType = "24">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "BC2CDE98-9177-4CE3-ADC3-96DA4A0CEF71"
-            shouldBeEnabled = "Yes"
+            uuid = "6CB066E0-E56D-484F-A8F9-2C06E94A633D"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "It_Stock_Iphone/ViewModels/KiemKeViewModel.swift"
+            filePath = "It_Stock_Iphone/View/HomeUIView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "144"
-            endingLineNumber = "144"
-            landmarkName = "InventoryStock(stock:adid:completion:)"
-            landmarkType = "7">
+            startingLineNumber = "112"
+            endingLineNumber = "112"
+            landmarkName = "userInfoCard"
+            landmarkType = "24">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "7D123940-5178-4F4C-9217-A79E0AB3D433"
-            shouldBeEnabled = "Yes"
+            uuid = "004A2194-7DEE-4032-8194-0ED9EA98872A"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "It_Stock_Iphone/ViewModels/KiemKeViewModel.swift"
+            filePath = "It_Stock_Iphone/View/HomeUIView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "147"
-            endingLineNumber = "147"
-            landmarkName = "InventoryStock(stock:adid:completion:)"
-            landmarkType = "7">
+            startingLineNumber = "107"
+            endingLineNumber = "107"
+            landmarkName = "userInfoCard"
+            landmarkType = "24">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "6DBF66F6-B604-4388-A251-7D94C26C5361"
-            shouldBeEnabled = "Yes"
+            uuid = "D9281E09-9A76-4D8A-B32D-A65641C28C55"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "It_Stock_Iphone/ViewModels/KiemKeViewModel.swift"
+            filePath = "It_Stock_Iphone/View/HomeUIView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "149"
-            endingLineNumber = "149"
-            landmarkName = "InventoryStock(stock:adid:completion:)"
-            landmarkType = "7">
+            startingLineNumber = "106"
+            endingLineNumber = "106"
+            landmarkName = "userInfoCard"
+            landmarkType = "24">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "68B14AF9-336D-4BC3-AE7D-3F01C61F888A"
-            shouldBeEnabled = "Yes"
+            uuid = "74F0207B-A7D5-4D01-AE41-342AEEF591AD"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "It_Stock_Iphone/ViewModels/KiemKeViewModel.swift"
+            filePath = "It_Stock_Iphone/View/HomeUIView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "148"
-            endingLineNumber = "148"
-            landmarkName = "InventoryStock(stock:adid:completion:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "12E15034-BA10-4B90-986B-C18B229570F0"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "It_Stock_Iphone/ViewModels/KiemKeViewModel.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "182"
-            endingLineNumber = "182"
-            landmarkName = "InventoryStock(stock:adid:completion:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "CED400D7-BA92-47C7-9C04-9B08FEBA8A60"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "It_Stock_Iphone/ViewModels/KiemKeViewModel.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "183"
-            endingLineNumber = "183"
-            landmarkName = "InventoryStock(stock:adid:completion:)"
-            landmarkType = "7">
+            startingLineNumber = "111"
+            endingLineNumber = "111"
+            landmarkName = "userInfoCard"
+            landmarkType = "24">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

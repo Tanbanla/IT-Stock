@@ -10,7 +10,7 @@ import SwiftUI
 struct TraTBUIView: View {
     @StateObject private var viewModel = BarcodeScannerViewModel()
     @StateObject private var xuatKhoVM = XuatKhoViewModel()
-    @EnvironmentObject var userDataManager: UserDataManager
+    @Binding var userLogin: UserData?
     @State private var currentDate: String = ""
     @State private var lyDo: String = ""
     
@@ -394,7 +394,7 @@ struct TraTBUIView: View {
         
         isLoading = true
         // Call API or perform submission logic
-        xuatKhoVM.TraStock(stock: selectKho, adid: userDataManager.currentUser?.chR_ADID ?? "" , item: item){_ in
+        xuatKhoVM.TraStock(stock: selectKho, adid: userLogin?.chR_ADID ?? "" , item: item){_ in
             DispatchQueue.main.async {
                 isLoading = false
                 xuatKhoVM.ResetFrom()

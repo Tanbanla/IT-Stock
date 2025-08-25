@@ -9,6 +9,7 @@ import SwiftUI
 
 struct LogInUIView: View {
     @StateObject private var viewModel = LoginViewModel()
+    @State private var userlogin: UserData? = nil
     @State private var showMainView = false
     var body: some View {
         ZStack {
@@ -94,7 +95,7 @@ struct LogInUIView: View {
                     }
             )
             .fullScreenCover(isPresented: $showMainView) {
-                MainUIView() //$viewModel.isLoggedIn
+                MainUIView(userLogin: $userlogin) //$viewModel.isLoggedIn
             }
             .alert("Lỗi", isPresented: .constant(viewModel.errorMessage != nil)) {
                 Button("OK") {
@@ -105,6 +106,7 @@ struct LogInUIView: View {
             }
             .alert("Đăng nhập thành công",isPresented: $viewModel.isLoggedIn) {
                 Button("OK", role: .cancel) {
+                    userlogin = viewModel.currentUser
                     showMainView = true
                 }
             }message: {

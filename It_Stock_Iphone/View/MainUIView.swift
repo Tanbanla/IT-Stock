@@ -22,15 +22,16 @@ enum Tab: String, CaseIterable, Identifiable {
 struct MainUIView: View {
     @State private var selectedTab: Tab = .home
     @State private var factorySelect: String = ""
+    @Binding var userLogin: UserData?
     var body: some View {
         ZStack(alignment: .bottom) {
             // Nội dung chính
             TabView(selection: $selectedTab) {
-                HomeUIView(factorySelect: $factorySelect)
+                HomeUIView(factorySelect: $factorySelect, userLogin: $userLogin)
                     .tag(Tab.home)
                     .ignoresSafeArea(.all, edges: .bottom)
                 
-                ListBorrowUIView(factorySelect: $factorySelect)
+                ListBorrowUIView(userLogin: $userLogin,factorySelect: $factorySelect)
                     .tag(Tab.borrow)
                     .ignoresSafeArea(.all, edges: .bottom)
             }
@@ -84,6 +85,6 @@ struct TabButton: View {
         }
     }
 }
-#Preview {
-    MainUIView()
-}
+//#Preview {
+//    MainUIView()
+//}

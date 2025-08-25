@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct HomeUIView: View {
-    @EnvironmentObject var userDataManager: UserDataManager
     @State private var isShowIcon: Bool = true
     @StateObject private var factoryVM = FactoryViewModel()
     @Binding var factorySelect: String
@@ -17,6 +16,8 @@ struct HomeUIView: View {
     @State private var showImportView = false
     @State private var showCheckView = false
     @StateObject private var xuatKhoVM = XuatKhoViewModel()
+    @State private var showLogoutConfirmation = false
+    @Binding var userLogin: UserData?
     
     var body: some View {
         ZStack {
@@ -46,20 +47,20 @@ struct HomeUIView: View {
             )
         }
         .fullScreenCover(isPresented: $showExportView) {
-            XuatKhoUIView(listKho: xuatKhoVM.ListStock ?? [], selectKho: factorySelect)
+            XuatKhoUIView(userLogin: $userLogin, listKho: xuatKhoVM.ListStock ?? [], selectKho: factorySelect)
                 .onAppear {
-                    xuatKhoVM.getListFactory(section: userDataManager.currentUser?.chR_COST_CENTER ?? "" )
+                    xuatKhoVM.getListFactory(section: userLogin?.chR_COST_CENTER ?? "" )
                 }
         }
         .fullScreenCover(isPresented: $showImportView) {
-            NhapKhoUIView(selectKho: factorySelect, section: userDataManager.currentUser?.chR_COST_CENTER ?? "", adid: userDataManager.currentUser?.chR_ADID ?? "")
+            NhapKhoUIView(selectKho: factorySelect, section: userLogin?.chR_COST_CENTER ?? "", adid: userLogin?.chR_ADID ?? "")
         }
         .fullScreenCover(isPresented: $showCheckView) {
-            KiemKeUIView(selectKho: factorySelect)
+            KiemKeUIView(userLogin: $userLogin, selectKho: factorySelect)
         }
         .onAppear {
             //userDataManager.currentUser?.chR_COST_CENTER 
-            factoryVM.fetchFactories(section: userDataManager.currentUser?.chR_COST_CENTER ?? "" )
+            factoryVM.fetchFactories(section: userLogin?.chR_COST_CENTER ?? "")
         }
     }
     
@@ -104,11 +105,18 @@ struct HomeUIView: View {
                 .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
             
             VStack(alignment: .leading, spacing: 4) {
-                Text(userDataManager.currentUser?.nvchR_NAME ?? "Không xác định")
+//                Text(userDataManager.currentUser?.nvchR_NAME ?? "Không xác định")
+//                    .font(.system(size: 18, weight: .bold))
+//                    .foregroundColor(.primary)
+//                
+//                Text(userDataManager.currentUser?.chR_COST_CENTER ?? "Không xác định")
+//                    .font(.system(size: 14, weight: .medium))
+//                    .foregroundColor(.blue)
+                Text(userLogin?.nvchR_NAME ?? "Không xác định")
                     .font(.system(size: 18, weight: .bold))
                     .foregroundColor(.primary)
                 
-                Text(userDataManager.currentUser?.chR_COST_CENTER ?? "Không xác định")
+                Text(userLogin?.chR_COST_CENTER ?? "Không xác định")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(.blue)
             }
@@ -117,6 +125,7 @@ struct HomeUIView: View {
             
             Button {
                 // Logout action
+                showLogoutConfirmation = true
             } label: {
                 VStack(spacing: 2) {
                     Image(systemName: "power")
@@ -136,8 +145,30 @@ struct HomeUIView: View {
         .background(Color.white)
         .cornerRadius(20)
         .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 5)
+        .alert("Đăng xuất", isPresented: $showLogoutConfirmation) {
+                Button("Hủy", role: .cancel) { }
+                Button("Đăng xuất", role: .destructive) {
+                    logout()
+                }
+            } message: {
+                Text("Bạn có chắc chắn muốn đăng xuất không?")
+            }
     }
-    
+    private func logout() {
+        // 1. Xóa dữ liệu từ UserDefaults
+        UserDefaults.standard.removeObject(forKey: "currentUser")
+        UserDefaults.standard.synchronize()
+        
+        
+        // 3. Chuyển về màn hình login
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let window = windowScene.windows.first {
+            window.rootViewController = UIHostingController(
+                rootView: LogInUIView()
+            )
+            window.makeKeyAndVisible()
+        }
+    }
     // MARK: - Factory Selection
     private var factorySelectionView: some View {
         VStack(alignment: .leading, spacing: 12) {

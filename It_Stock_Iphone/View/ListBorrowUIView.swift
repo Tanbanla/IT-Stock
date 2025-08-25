@@ -10,6 +10,7 @@ import SwiftUI
 struct ListBorrowUIView: View {
     @State private var searchText = ""
     @StateObject private var BorrowListVM = ListBorrowViewModel()
+    @Binding var userLogin: UserData?
     @State private var selectedItem: ListBorrowData? = nil
     @State private var showTraView: Bool = false
     @Binding var factorySelect: String
@@ -51,7 +52,7 @@ struct ListBorrowUIView: View {
             loadData()
         }
         .fullScreenCover(item: $selectedItem) { item in
-            TraTBUIView(item: item, selectKho: factorySelect)
+            TraTBUIView(userLogin: $userLogin,item: item, selectKho: factorySelect)
         }
     }
     // MARK: - Computed Properties
@@ -75,8 +76,8 @@ struct ListBorrowUIView: View {
     // MARK: - Methods
     private func loadData() {
         // Giả sử lấy section từ user manager
-        let section = "3510" // Thay bằng userDataManager.currentUser?.chR_COST_CENTER
-        BorrowListVM.getListBorrow(section: section) {_ in
+        let section = userLogin?.chR_COST_CENTER// Thay bằng userDataManager.currentUser?.chR_COST_CENTER
+        BorrowListVM.getListBorrow(section: section ?? "") {_ in
             DispatchQueue.main.async {
                 
             }
@@ -168,22 +169,25 @@ struct SearchBar1: View {
          var onReturn: () -> Void
          
          var body: some View {
-             HStack(spacing: 4) {
+             HStack(spacing: 0) {
+                 // Phần thông tin chi tiết
                  VStack(alignment: .leading, spacing: 8) {
-                     // Tên thiết bị
+                     // Header với tên thiết bị và trạng thái
                      HStack {
                          Text(item.nvchR_ITEM_NAME ?? "Không có tên")
                              .font(.system(size: 16, weight: .bold))
                              .foregroundColor(.primary)
-                         // Trạng thái
-                         Text(item.chR_KIND_IN_OUT ?? "")
+                             .lineLimit(1)
                          
-                             .font(.system(size: 12, weight: .semibold))
-                             .padding(.horizontal, 8)
-                             .padding(.vertical, 4)
-                             .background(.blue)
+                         Spacer()
+                         
+                         Text(item.chR_TYPE_GOODS ?? "")
+                             .font(.system(size: 11, weight: .semibold))
+                             .padding(.horizontal, 6)
+                             .padding(.vertical, 3)
+                             .background(Color.blue)
                              .foregroundColor(.white)
-                             .cornerRadius(6)
+                             .cornerRadius(4)
                      }
                      
                      // Thông tin chi tiết
@@ -193,28 +197,110 @@ struct SearchBar1: View {
                          InfoRow(label: "Mã NV:", value: item.chR_CODE_PER_SECT ?? "N/A")
                          InfoRow(label: "Phòng ban:", value: item.chR_SEC ?? "Không xác định")
                          InfoRow(label: "Kho:", value: item.chR_KHO ?? "N/A")
+                         
                          if let reason = item.nvchR_REASON_IN_OUT, !reason.isEmpty {
                              InfoRow(label: "Lý do:", value: reason)
+                                 .lineLimit(1)
                          }
                      }
-                     .font(.system(size: 14))
+                     .font(.system(size: 13))
                  }
+                 .padding(.vertical, 12)
+                 .padding(.leading, 12)
+                 .padding(.trailing, 8)
                  
-                 HStack(spacing: 0){
-                     Text("Đang mượn").font(.system(size: 13, weight: .medium)).foregroundStyle(.white).frame(width: 40, alignment: .leading)
-                     Text("\(item.inT_QUANTITY_REMAINING)").font(.system(size: 22, weight: .bold)).foregroundStyle(.white)
-                 }.frame(width: 70).padding(.horizontal,10).padding(.vertical, 10).background(.blue).cornerRadius(12).padding(.trailing,4).shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
-                 
-                 Button(action: onReturn){
-                     Text("Trả").bold().foregroundStyle(.white).frame(height: 200)
-                 }.padding(.horizontal, 4).background(.red).shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+                 // Phần số lượng và nút trả
+                 VStack(spacing: 0) {
+                     // Số lượng đang mượn
+                     VStack(spacing: 4) {
+                         Text("Đang mượn")
+                             .font(.system(size: 12, weight: .medium))
+                             .foregroundColor(.white)
+                             .multilineTextAlignment(.center)
+                         
+                         Text("\(item.inT_QUANTITY_REMAINING)")
+                             .font(.system(size: 20, weight: .bold))
+                             .foregroundColor(.white)
+                     }
+                     .frame(width: 80)
+                     .padding(.vertical, 8)
+                     .background(Color.blue)
+                     
+                     // Nút trả
+                     Button(action: onReturn) {
+                         Text("Trả")
+                             .font(.system(size: 14, weight: .bold))
+                             .foregroundColor(.white)
+                             .frame(maxWidth: .infinity, maxHeight: .infinity)
+                     }
+                     .frame(height: 44)
+                     .background(Color.red)
+                 }
+                 .frame(width: 80)
+                 .cornerRadius(8)
+                 .padding(.trailing, 12)
+                 .padding(.vertical, 8)
              }
-             .padding(.leading, 12)
              .background(Color.white)
              .cornerRadius(12)
              .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+             .padding(.horizontal, 1)
          }
      }
+//     struct BorrowItemCard: View {
+//         let item: ListBorrowData
+//         var onReturn: () -> Void
+//         
+//         var body: some View {
+//             VStack(spacing: 4) {
+//                 //VStack(alignment: .leading, spacing: 8) {
+//                     // Tên thiết bị
+//                     HStack {
+//                         Text(item.nvchR_ITEM_NAME ?? "Không có tên")
+//                             .font(.system(size: 16, weight: .bold))
+//                             .foregroundColor(.primary)
+//                         // Trạng thái
+//                         Text(item.chR_TYPE_GOODS ?? "")
+//                         
+//                             .font(.system(size: 12, weight: .semibold))
+//                             .padding(.horizontal, 8)
+//                             .padding(.vertical, 4)
+//                             .background(.blue)
+//                             .foregroundColor(.white)
+//                             .cornerRadius(6)
+//                         Spacer()
+//                     }.padding(.top, 4)
+//                 //}
+//                 HStack{
+//                     // Thông tin chi tiết
+//                     VStack(alignment: .leading, spacing: 4) {
+//                         InfoRow(label: "Ngày xuất:", value: formatDateString(item.dtM_DATE_IN_OUT) ?? "")
+//                         InfoRow(label: "Tên NV:", value: item.chR_PER_SECT ?? "N/A")
+//                         InfoRow(label: "Mã NV:", value: item.chR_CODE_PER_SECT ?? "N/A")
+//                         InfoRow(label: "Phòng ban:", value: item.chR_SEC ?? "Không xác định")
+//                         InfoRow(label: "Kho:", value: item.chR_KHO ?? "N/A")
+//                         if let reason = item.nvchR_REASON_IN_OUT, !reason.isEmpty {
+//                             InfoRow(label: "Lý do:", value: reason)
+//                         }
+//                         Spacer()
+//                     }
+//                     .font(.system(size: 14))
+//                     HStack(spacing: 0){
+//                         Text("Đang mượn").font(.system(size: 13, weight: .medium)).foregroundStyle(.white).frame(width: 40, alignment: .leading)
+//                         Text("\(item.inT_QUANTITY_REMAINING)").font(.system(size: 22, weight: .bold)).foregroundStyle(.white)
+//                     }.frame(width: 70).padding(.horizontal,10).padding(.vertical, 10).background(.blue).cornerRadius(12).padding(.trailing,4).shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+//                     
+//                     Button(action: onReturn){
+//                         Text("Trả").bold().foregroundStyle(.white).frame(height: 200)
+//                     }.padding(.horizontal, 4).background(.red).shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+//                 }
+//             }
+//             .padding(.leading, 12)
+//             .background(Color.white)
+//             .cornerRadius(12)
+//             .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+//         }
+//     }
      // MARK: - Helper Views
      struct InfoRow: View {
          let label: String
@@ -302,3 +388,6 @@ private func formatDateString(_ dateString: String?) -> String? {
     return dateString // Trả về nguyên bản nếu không parse được
 }
 
+//#Preview {
+//    //ListBorrowUIView(factorySelect: "BIVN-F1",)
+//}

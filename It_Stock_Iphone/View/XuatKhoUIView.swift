@@ -8,8 +8,9 @@
 import SwiftUI
 struct XuatKhoUIView: View {
     @StateObject private var viewModel = BarcodeScannerViewModel()
+    @StateObject private var masterGoodVM = MasterGoodViewModel()
     @StateObject private var xuatKhoVM = XuatKhoViewModel()
-    @EnvironmentObject var userDataManager: UserDataManager
+    @Binding var userLogin: UserData?
     @State private var currentDate: String = ""
     
     @State private var showScran: Bool = false
@@ -19,6 +20,11 @@ struct XuatKhoUIView: View {
     @State private var formattedDate: String = ""
     @State private var selectedDate = Date()
     @State private var showCanlender: Bool = false
+    // cho phần tím kiếm
+    @State private var searchText = ""
+    @State private var showSuggestions = false
+    @State private var allProducts: [MasterGoodData] = []
+    @State private var filteredProducts: [MasterGoodData] = []
     
     @Environment(\.dismiss) private var dismiss
     let listKho: [FactoryData]?
@@ -81,6 +87,7 @@ struct XuatKhoUIView: View {
         .alert("Thành công", isPresented: $xuatKhoVM.isSuccess) {
             Button("OK") {
                 xuatKhoVM.ResetFrom()
+                searchText = ""
             }
         } message: {
             Text("Xuất thiết bị thành công")
@@ -93,6 +100,7 @@ struct XuatKhoUIView: View {
         }
         .onAppear {
             setupInitialDate()
+            loadProducts()
         }
     }
     
@@ -176,8 +184,7 @@ struct XuatKhoUIView: View {
                 .foregroundColor(.blue)
             
             HStack(spacing: 12) {
-                TextField("Mã sản phẩm", text: $xuatKhoVM.phanLoai)
-                    .disabled(true)
+                TextField("Mã sản phẩm", text: $searchText)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 14)
                     .background(Color.blue.opacity(0.08))
@@ -186,10 +193,30 @@ struct XuatKhoUIView: View {
                         RoundedRectangle(cornerRadius: 12)
                             .stroke(Color.blue.opacity(0.2), lineWidth: 1)
                     )
+                    .onChange(of: searchText) { newValue in
+                        if !newValue.isEmpty {
+                            showSuggestions = true
+                            filterProducts()
+                            xuatKhoVM.phanLoai = ""
+                        } else {
+                            showSuggestions = false
+                        }
+                    }
+                    .overlay(alignment: .trailing) {
+                        if !searchText.isEmpty {
+                            Button {
+                                searchText = ""
+                                showSuggestions = false
+                            } label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundColor(.gray)
+                                    .padding(.trailing, 8)
+                            }
+                        }
+                    }
                 
                 Button {
                     withAnimation {
-                        ScranEmployee = false
                         showScran = true
                     }
                 } label: {
@@ -197,12 +224,84 @@ struct XuatKhoUIView: View {
                         .font(.system(size: 22))
                         .foregroundColor(.white)
                         .frame(width: 50, height: 50)
-                        //.background(LinearGradient(colors: [.blue, .purple], startPoint: .topLeading, endPoint: .bottomTrailing))
                         .background(Color.blue)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
             }
+            
+            // Hiển thị danh sách gợi ý
+            if showSuggestions && !filteredProducts.isEmpty && xuatKhoVM.phanLoai == "" {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Gợi ý")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(.gray)
+                    
+                    ScrollView {
+                        LazyVStack(spacing: 0) {
+                            ForEach(filteredProducts, id: \.id) { product in
+                                Button {
+                                    selectProduct(product)
+                                } label: {
+                                    HStack {
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            Text(product.chR_CODE_GOODS)
+                                                .font(.system(size: 14, weight: .semibold))
+                                                .foregroundColor(.black)
+                                            Text(product.nvchR_ITEM_NAME)
+                                                .font(.system(size: 12))
+                                                .foregroundColor(.gray)
+                                                .lineLimit(1)
+                                        }
+                                        Spacer()
+                                        Image(systemName: "chevron.right")
+                                            .font(.system(size: 12))
+                                            .foregroundColor(.gray)
+                                    }
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 12)
+                                    .background(Color.white)
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                                
+                                Divider()
+                                    .padding(.leading, 16)
+                            }
+                        }
+                    }
+                    .frame(maxHeight: 200)
+                    .background(Color.white)
+                    .cornerRadius(8)
+                    .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 2)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                    )
+                }
+            }
         }
+    }
+    private func loadProducts() {
+        masterGoodVM.fetchMasterGood(section: (userLogin?.chR_COST_CENTER ?? "")) {_ in
+            DispatchQueue.main.async {
+                self.allProducts = masterGoodVM.phanloai ?? []
+            }
+        }
+    }
+
+    private func filterProducts() {
+        if searchText.isEmpty {
+            filteredProducts = allProducts
+        } else {
+            filteredProducts = allProducts.filter { product in
+                product.chR_CODE_GOODS.localizedCaseInsensitiveContains(searchText) ||
+                product.nvchR_ITEM_NAME.localizedCaseInsensitiveContains(searchText)
+            }
+        }
+    }
+    private func selectProduct(_ product: MasterGoodData) {
+        // Cập nhật các thông tin khác
+        handleBarcodeScanned(code: product.chR_CODE_GOODS)
+        showSuggestions = false
     }
     
     // MARK: - Kho Nhận Section
@@ -628,6 +727,8 @@ struct XuatKhoUIView: View {
                     xuatKhoVM.IdGood = self.xuatKhoVM.data?.id ?? 0
                     xuatKhoVM.phanLoai = self.xuatKhoVM.data?.nvchR_ITEM_NAME ?? code
                     xuatKhoVM.slTon = String((self.xuatKhoVM.data?.inT_QTY_OLD ?? 0) + (self.xuatKhoVM.data?.inT_QTY_OLD ?? 0))
+                    
+                    searchText = self.xuatKhoVM.data?.nvchR_ITEM_NAME ?? code
                 }
             }
         }
@@ -695,7 +796,7 @@ struct XuatKhoUIView: View {
         
         isLoading = true
         // Call API or perform submission logic
-        xuatKhoVM.MuonOrXuat(stock: selectKho, adid: userDataManager.currentUser?.chR_ADID ?? "", SectionAdid: userDataManager.currentUser?.chR_COST_CENTER ?? ""){_ in
+        xuatKhoVM.MuonOrXuat(stock: selectKho, adid: userLogin?.chR_ADID ?? "", SectionAdid: userLogin?.chR_COST_CENTER ?? ""){_ in
             DispatchQueue.main.async {
                 isLoading = false
                 //xuatKhoVM.ResetFrom()
@@ -712,6 +813,7 @@ struct XuatKhoUIView: View {
                     // Cập nhật thông tin từ API
                     xuatKhoVM.TenNv = self.xuatKhoVM.dataUser?.chR_EMPLOYEE_NAME ?? "Không xác định"
                     xuatKhoVM.SDT = self.xuatKhoVM.dataUser?.chR_PHONE_NO ?? "Không có trên hệ thống"
+                    xuatKhoVM.SectionNv = self.xuatKhoVM.dataUser?.chR_SECTION ?? "Không xác định"
                 } else {
                     // Giữ nguyên giá trị nhập tay nếu không tìm thấy
                     xuatKhoVM.TenNv = "Không tìm thấy thông tin"
@@ -744,6 +846,6 @@ struct XuatKhoUIView: View {
         return false
     }
 }
-#Preview {
-    XuatKhoUIView(listKho: nil, selectKho: "BIVN-F1")
-}
+//#Preview {
+//    XuatKhoUIView(listKho: nil, selectKho: "BIVN-F1")
+//}

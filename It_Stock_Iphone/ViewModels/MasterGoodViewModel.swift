@@ -16,39 +16,69 @@ class MasterGoodViewModel: ObservableObject{
     
     private var cancellables: Set<AnyCancellable> = []
     // lấy thông tin danh sách lựa chọn
-    func fetchMasterGood(section: String) {
+    func fetchMasterGood(section: String, completion: @escaping (Bool) -> Void) {
         isLoading = true
         errorMessage = nil
         
-        guard let url = URL(string: ApiLink.shared.MasterGoodBySection+"?sectionControl=\(section)")else{
+        // Encode các tham số để tránh lỗi URL
+        guard let encodedCode = section.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
+              let url = URL(string: ApiLink.shared.MasterGoodBySection + "?sectionControl=\(encodedCode)") else {
             errorMessage = "URL không hợp lệ"
             isLoading = false
+            completion(false)
             return
         }
         
-        URLSession.shared.dataTaskPublisher(for: url)
-            .tryMap{ output in
-                guard let httpResponse = output.response as? HTTPURLResponse,
-                      (200...299).contains(httpResponse.statusCode) else {
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        
+        print("API URL: \(url.absoluteString)") // Debug URL
+        
+        URLSession.shared.dataTaskPublisher(for: request)
+            .tryMap { output in
+                guard let httpResponse = output.response as? HTTPURLResponse else {
                     throw URLError(.badServerResponse)
                 }
+                
+                print("HTTP Status Code: \(httpResponse.statusCode)")
+                
+                if !(200...299).contains(httpResponse.statusCode) {
+                    // Try to parse error message from response
+                    if let errorString = String(data: output.data, encoding: .utf8) {
+                        throw NSError(domain: "", code: httpResponse.statusCode,
+                                      userInfo: [NSLocalizedDescriptionKey: "Server error: \(errorString)"])
+                    } else {
+                        throw URLError(URLError.Code(rawValue: httpResponse.statusCode))
+                    }
+                }
+                
                 return output.data
             }
             .decode(type: MasterGoodModel.self, decoder: JSONDecoder())
             .receive(on: DispatchQueue.main)
             .sink(
-                receiveCompletion: { [weak self] completion in
+                receiveCompletion: { [weak self] completionResult in
                     self?.isLoading = false
-                    if case let .failure(error) = completion {
-                        self?.errorMessage = error.localizedDescription
+                    
+                    switch completionResult {
+                    case .finished:
+                        // Completion will be handled in receiveValue
+                        break
+                    case .failure(let error):
+                        self?.errorMessage = "Lỗi: \(error.localizedDescription)"
+                        print("API Error: \(error)")
+                        completion(false)
                     }
                 },
                 receiveValue: { [weak self] response in
                     if response.success {
                         self?.phanloai = response.data
-                        self?.isLoading = true
+                        self?.isLoading = false
+                        completion(true)
                     } else {
-                        self?.errorMessage = response.message ?? "Lỗi khi lấy dữ liệu kho"
+                        self?.errorMessage = response.message ?? "Không tìm thấy dữ liệu phân loại"
+                        completion(false)
                     }
                 }
             )
@@ -87,7 +117,7 @@ class MasterGoodViewModel: ObservableObject{
                     // Try to parse error message from response
                     if let errorString = String(data: output.data, encoding: .utf8) {
                         throw NSError(domain: "", code: httpResponse.statusCode,
-                                    userInfo: [NSLocalizedDescriptionKey: "Server error: \(errorString)"])
+                                      userInfo: [NSLocalizedDescriptionKey: "Server error: \(errorString)"])
                     } else {
                         throw URLError(URLError.Code(rawValue: httpResponse.statusCode))
                     }
@@ -126,55 +156,55 @@ class MasterGoodViewModel: ObservableObject{
     }
     // import thông tin nhập kho
     func importUsedGoods(request: ImportUsedGoodsRequest, completion: @escaping (Bool) -> Void) {
-            isLoading = true
-            errorMessage = nil
-            isSuccess = false
-            
-            guard let url = URL(string: ApiLink.shared.importUsedgood) else {
-                errorMessage = "URL không hợp lệ"
-                isLoading = false
-                completion(false)
-                return
-            }
-            if request.nvchR_REASON_IN_OUT == "" {
-                errorMessage = "Không được bỏ trống lý do"
-                isLoading = false
-                completion(false)
-                return
-            }
-            var urlRequest = URLRequest(url: url)
-            urlRequest.httpMethod = "POST"
-            urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            
-            do {
-                urlRequest.httpBody = try JSONEncoder().encode(request)
-            } catch {
-                errorMessage = "Lỗi khi tạo dữ liệu gửi đi"
-                isLoading = false
-                completion(false)
-                return
-            }
-            
-            URLSession.shared.dataTask(with: urlRequest) { [weak self] data, response, error in
-                DispatchQueue.main.async {
-                    self?.isLoading = false
-                    
-                    if let error = error {
-                        self?.errorMessage = error.localizedDescription
-                        completion(false)
-                        return
-                    }
-                    
-                    guard let httpResponse = response as? HTTPURLResponse,
-                          (200...299).contains(httpResponse.statusCode) else {
-                        self?.errorMessage = "Lỗi từ server"
-                        completion(false)
-                        return
-                    }
-                    
-                    self?.isSuccess = true
-                    completion(true)
-                }
-            }.resume()
+        isLoading = true
+        errorMessage = nil
+        isSuccess = false
+        
+        guard let url = URL(string: ApiLink.shared.importUsedgood) else {
+            errorMessage = "URL không hợp lệ"
+            isLoading = false
+            completion(false)
+            return
         }
+        if request.nvchR_REASON_IN_OUT == "" {
+            errorMessage = "Không được bỏ trống lý do"
+            isLoading = false
+            completion(false)
+            return
+        }
+        var urlRequest = URLRequest(url: url)
+        urlRequest.httpMethod = "POST"
+        urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        do {
+            urlRequest.httpBody = try JSONEncoder().encode(request)
+        } catch {
+            errorMessage = "Lỗi khi tạo dữ liệu gửi đi"
+            isLoading = false
+            completion(false)
+            return
+        }
+        
+        URLSession.shared.dataTask(with: urlRequest) { [weak self] data, response, error in
+            DispatchQueue.main.async {
+                self?.isLoading = false
+                
+                if let error = error {
+                    self?.errorMessage = error.localizedDescription
+                    completion(false)
+                    return
+                }
+                
+                guard let httpResponse = response as? HTTPURLResponse,
+                      (200...299).contains(httpResponse.statusCode) else {
+                    self?.errorMessage = "Lỗi từ server"
+                    completion(false)
+                    return
+                }
+                
+                self?.isSuccess = true
+                completion(true)
+            }
+        }.resume()
     }
+}

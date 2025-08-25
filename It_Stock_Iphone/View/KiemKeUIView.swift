@@ -10,10 +10,16 @@ import SwiftUI
 struct KiemKeUIView: View {
     @StateObject private var viewModel = BarcodeScannerViewModel()
     @StateObject private var kiemKeVM = KiemKeViewModel()
-    @EnvironmentObject var userDataManager: UserDataManager
+    @StateObject private var masterGoodVM = MasterGoodViewModel()
+    @Binding var userLogin: UserData?
     @State private var lyDo: String = ""
     @State private var showScran: Bool = false
     @Environment(\.dismiss) private var dismiss
+    // cho phần tím kiềm
+    @State private var searchText = ""
+    @State private var showSuggestions = false
+    @State private var allProducts: [MasterGoodData] = []
+    @State private var filteredProducts: [MasterGoodData] = []
     
     let selectKho: String
     
@@ -72,6 +78,7 @@ struct KiemKeUIView: View {
             Button("OK") {
                 kiemKeVM.ResetFrom()
                 lyDo = ""
+                searchText = ""
             }
         } message: {
             Text("Kiểm kê thiết bị thành công")
@@ -84,6 +91,7 @@ struct KiemKeUIView: View {
         }
         .onAppear {
             setupInitialDate()
+            loadProducts()
         }
     }
     private func setupInitialDate() {
@@ -123,13 +131,13 @@ struct KiemKeUIView: View {
     
     // MARK: - Barcode Section
     private var barcodeSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 12) {
             Text("Phân loại")
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(.blue)
             
             HStack(spacing: 12) {
-                TextField("Quét mã vạch", text: $kiemKeVM.phanLoai)
+                TextField("Mã sản phẩm", text: $searchText)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 14)
                     .background(Color.blue.opacity(0.08))
@@ -138,6 +146,27 @@ struct KiemKeUIView: View {
                         RoundedRectangle(cornerRadius: 12)
                             .stroke(Color.blue.opacity(0.2), lineWidth: 1)
                     )
+                    .onChange(of: searchText) { newValue in
+                        if !newValue.isEmpty {
+                            showSuggestions = true
+                            kiemKeVM.phanLoai = ""
+                            filterProducts()
+                        } else {
+                            showSuggestions = false
+                        }
+                    }
+                    .overlay(alignment: .trailing) {
+                        if !searchText.isEmpty {
+                            Button {
+                                searchText = ""
+                                showSuggestions = false
+                            } label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundColor(.gray)
+                                    .padding(.trailing, 8)
+                            }
+                        }
+                    }
                 
                 Button {
                     withAnimation {
@@ -152,7 +181,83 @@ struct KiemKeUIView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
             }
+            
+            // Hiển thị danh sách gợi ý
+            if (showSuggestions && !filteredProducts.isEmpty && kiemKeVM.phanLoai == ""){
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Gợi ý")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(.gray)
+                    
+                    ScrollView {
+                        LazyVStack(spacing: 0) {
+                            ForEach(filteredProducts, id: \.id) { product in
+                                Button {
+                                    selectProduct(product)
+                                    showSuggestions = false
+                                } label: {
+                                    HStack {
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            Text(product.chR_CODE_GOODS)
+                                                .font(.system(size: 14, weight: .semibold))
+                                                .foregroundColor(.black)
+                                            Text(product.nvchR_ITEM_NAME)
+                                                .font(.system(size: 12))
+                                                .foregroundColor(.gray)
+                                                .lineLimit(1)
+                                        }
+                                        Spacer()
+                                        Image(systemName: "chevron.right")
+                                            .font(.system(size: 12))
+                                            .foregroundColor(.gray)
+                                    }
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 12)
+                                    .background(Color.white)
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                                
+                                Divider()
+                                    .padding(.leading, 16)
+                            }
+                        }
+                    }
+                    .frame(maxHeight: 200)
+                    .background(Color.white)
+                    .cornerRadius(8)
+                    .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 2)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                    )
+                }
+            }
         }
+    }
+    private func loadProducts() {
+        masterGoodVM.fetchMasterGood(section: (userLogin?.chR_COST_CENTER ?? "")) {_ in
+            DispatchQueue.main.async {
+                self.allProducts = masterGoodVM.phanloai ?? []
+            }
+        }
+    }
+
+    private func filterProducts() {
+        if searchText.isEmpty {
+            filteredProducts = allProducts
+        } else {
+            filteredProducts = allProducts.filter { product in
+                product.chR_CODE_GOODS.localizedCaseInsensitiveContains(searchText) ||
+                product.nvchR_ITEM_NAME.localizedCaseInsensitiveContains(searchText)
+            }
+        }
+    }
+    private func selectProduct(_ product: MasterGoodData) {
+        //searchText = product.nvchR_ITEM_NAME
+        showSuggestions = false
+        
+        // Cập nhật các thông tin khác
+        handleBarcodeScanned(code: "\(product.chR_CODE_GOODS)")
     }
     
     // MARK: - Loại Hàng Section
@@ -411,6 +516,8 @@ struct KiemKeUIView: View {
                 let new = Int(kiemKeVM.data?.inT_QTY_NEW ?? 0);
                 let total = old + new
                 kiemKeVM.slTon = String(total)
+                
+                searchText = kiemKeVM.data?.nvchR_ITEM_NAME ?? code
             }
         }
     }
@@ -437,7 +544,7 @@ struct KiemKeUIView: View {
         }
         kiemKeVM.isLoading = true
         // Call API or perform submission logic
-        kiemKeVM.InventoryStock(stock: selectKho, adid: userDataManager.currentUser?.chR_ADID ?? "") { _ in
+        kiemKeVM.InventoryStock(stock: selectKho, adid: userLogin?.chR_ADID ?? "") { _ in
             DispatchQueue.main.async {
                 kiemKeVM.isLoading = false
                 

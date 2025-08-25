@@ -22,7 +22,11 @@ struct NhapKhoUIView: View {
     @State private var showScran: Bool = false
     @State private var isLoading: Bool = false
     @State private var idGood: Int = 0
-    
+    // cho phần tím kiếm
+    @State private var searchText = ""
+    @State private var showSuggestions = false
+    @State private var allProducts: [MasterGoodData] = []
+    @State private var filteredProducts: [MasterGoodData] = []
     
     @Environment(\.dismiss) private var dismiss
     
@@ -71,6 +75,7 @@ struct NhapKhoUIView: View {
         .alert("Thành công", isPresented: $masterGoodVM.isSuccess) {
             Button("OK") {
                 resetForm()
+                searchText = ""
             }
         } message: {
             Text("Nhập kho thành công")
@@ -90,6 +95,7 @@ struct NhapKhoUIView: View {
         }
         .onAppear {
             setupInitialDate()
+            loadProducts()
         }
     }
     
@@ -123,18 +129,12 @@ struct NhapKhoUIView: View {
     // MARK: - Barcode Section
     private var barcodeSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 4) {
-                Text("Phân loại")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.blue)
-                Text("*")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.red)
-            }
+            Text("Phân loại")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(.blue)
             
             HStack(spacing: 12) {
-                TextField("Quét mã vạch", text: $phanLoai)
-                    .disabled(true)
+                TextField("Mã sản phẩm", text: $searchText)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 14)
                     .background(Color.blue.opacity(0.08))
@@ -143,6 +143,27 @@ struct NhapKhoUIView: View {
                         RoundedRectangle(cornerRadius: 12)
                             .stroke(Color.blue.opacity(0.2), lineWidth: 1)
                     )
+                    .onChange(of: searchText) { newValue in
+                        if !newValue.isEmpty {
+                            showSuggestions = true
+                            filterProducts()
+                            phanLoai = ""
+                        } else {
+                            showSuggestions = false
+                        }
+                    }
+                    .overlay(alignment: .trailing) {
+                        if !searchText.isEmpty {
+                            Button {
+                                searchText = ""
+                                showSuggestions = false
+                            } label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundColor(.gray)
+                                    .padding(.trailing, 8)
+                            }
+                        }
+                    }
                 
                 Button {
                     withAnimation {
@@ -153,12 +174,85 @@ struct NhapKhoUIView: View {
                         .font(.system(size: 22))
                         .foregroundColor(.white)
                         .frame(width: 50, height: 50)
-                        //.background(LinearGradient(colors: [.blue, .purple], startPoint: .topLeading, endPoint: .bottomTrailing))
                         .background(Color.blue)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
             }
+            
+            // Hiển thị danh sách gợi ý
+            if showSuggestions && !filteredProducts.isEmpty && phanLoai == "" {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Gợi ý")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(.gray)
+                    
+                    ScrollView {
+                        LazyVStack(spacing: 0) {
+                            ForEach(filteredProducts, id: \.id) { product in
+                                Button {
+                                    selectProduct(product)
+                                } label: {
+                                    HStack {
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            Text(product.chR_CODE_GOODS)
+                                                .font(.system(size: 14, weight: .semibold))
+                                                .foregroundColor(.black)
+                                            Text(product.nvchR_ITEM_NAME)
+                                                .font(.system(size: 12))
+                                                .foregroundColor(.gray)
+                                                .lineLimit(1)
+                                        }
+                                        Spacer()
+                                        Image(systemName: "chevron.right")
+                                            .font(.system(size: 12))
+                                            .foregroundColor(.gray)
+                                    }
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 12)
+                                    .background(Color.white)
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                                
+                                Divider()
+                                    .padding(.leading, 16)
+                            }
+                        }
+                    }
+                    .frame(maxHeight: 200)
+                    .background(Color.white)
+                    .cornerRadius(8)
+                    .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 2)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                    )
+                }
+            }
         }
+    }
+    private func loadProducts() {
+        masterGoodVM.fetchMasterGood(section: section) {_ in
+            DispatchQueue.main.async {
+                self.allProducts = masterGoodVM.phanloai ?? []
+            }
+        }
+    }
+
+    private func filterProducts() {
+        if searchText.isEmpty {
+            filteredProducts = allProducts
+        } else {
+            filteredProducts = allProducts.filter { product in
+                product.chR_CODE_GOODS.localizedCaseInsensitiveContains(searchText) ||
+                product.nvchR_ITEM_NAME.localizedCaseInsensitiveContains(searchText)
+            }
+        }
+    }
+    private func selectProduct(_ product: MasterGoodData) {
+        //searchText = product.nvchR_ITEM_NAME
+        // Cập nhật các thông tin khác
+        handleBarcodeScanned(code: product.chR_CODE_GOODS)
+        showSuggestions = false
     }
     
     // MARK: - Kho Nhap Section
@@ -311,6 +405,8 @@ struct NhapKhoUIView: View {
                 self.isLoading = false
                 self.phanLoai = self.masterGoodVM.data?.nvchR_ITEM_NAME ?? code
                 self.idGood = self.masterGoodVM.data?.id ?? 0
+                
+                searchText = self.masterGoodVM.data?.nvchR_ITEM_NAME ?? code
             }
         }
     }
@@ -374,6 +470,6 @@ struct NhapKhoUIView: View {
         lyDo = ""
     }
 }
-#Preview {
-    NhapKhoUIView(selectKho: "Kho IT", section: "3510",adid: "khanhmf")
-}
+//#Preview {
+//    NhapKhoUIView(selectKho: "Kho IT", section: "3510",adid: "khanhmf")
+//}

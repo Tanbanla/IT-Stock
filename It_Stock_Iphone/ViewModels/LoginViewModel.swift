@@ -12,12 +12,14 @@ class LoginViewModel: ObservableObject {
     @Published var adid = ""
     @Published var password = ""
     @Published var showPassword = true
+    @Published var userDataManager = UserDataManager()
     
     // Output
     @Published var isLoading = false
     @Published var errorMessage: String?
     @Published var isLoggedIn = false
     @Published var currentUser: UserData?
+    
     
     private var cancellables = Set<AnyCancellable>()
     
@@ -71,18 +73,31 @@ class LoginViewModel: ObservableObject {
                 switch completion {
                 case .failure(let error):
                     self?.errorMessage = error.localizedDescription
+                    // Reset trạng thái nếu login fail
+                    self?.currentUser = nil
+                    self?.isLoggedIn = false
                 case .finished:
                     break
                 }
             } receiveValue: { [weak self] response in
-                if response.success {
-                    self?.currentUser = response.data
+                if response.success, let userData = response.data {
+                    // Cập nhật UserDataManager
+                    self?.userDataManager.currentUser = userData
+                    self?.userDataManager.isLoggedIn = true
+                    
+                    // Cập nhật local state
+                    self?.currentUser = userData
                     self?.isLoggedIn = true
-                    // Lưu thông tin user hoặc token nếu cần
-                    // Lưu vào UserDefaults nếu cần
-                    UserDefaults.standard.set(try? JSONEncoder().encode(response.data), forKey: "currentUser")
+                    
+                    // Lưu vào UserDefaults
+//                    if let encoded = try? JSONEncoder().encode(userData) {
+//                        UserDefaults.standard.set(encoded, forKey: "currentUser")
+//                        UserDefaults.standard.synchronize() // Thêm dòng này
+//                    }
                 } else {
                     self?.errorMessage = response.message
+                    self?.currentUser = nil
+                    self?.isLoggedIn = false
                 }
             }
             .store(in: &cancellables)
