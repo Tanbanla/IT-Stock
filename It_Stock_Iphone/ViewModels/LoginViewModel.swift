@@ -12,7 +12,7 @@ class LoginViewModel: ObservableObject {
     @Published var adid = ""
     @Published var password = ""
     @Published var showPassword = true
-    @Published var userDataManager = UserDataManager()
+    //@Published var userDataManager = UserDataManager()
     
     // Output
     @Published var isLoading = false
@@ -82,10 +82,6 @@ class LoginViewModel: ObservableObject {
             } receiveValue: { [weak self] response in
                 if response.success, let userData = response.data {
                     // Cập nhật UserDataManager
-                    self?.userDataManager.currentUser = userData
-                    self?.userDataManager.isLoggedIn = true
-                    
-                    // Cập nhật local state
                     self?.currentUser = userData
                     self?.isLoggedIn = true
                     

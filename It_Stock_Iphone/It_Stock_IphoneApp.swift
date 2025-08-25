@@ -9,10 +9,10 @@ import SwiftUI
 
 @main
 struct It_Stock_IphoneApp: App {
-    @StateObject var userDataManager = UserDataManager()
+    //@StateObject var userDataManager = UserDataManager()
     var body: some Scene {
         WindowGroup {
-            LogInUIView().environmentObject(userDataManager)
+            LogInUIView()//.environmentObject(userDataManager)
         }
     }
 }
