@@ -391,6 +391,14 @@ struct TraTBUIView: View {
             xuatKhoVM.errorMessage = "Số lượng trả không hợp lệ"
             return
         }
+//        guard let muon = Int(xuatKhoVM.slTon) else {
+//            xuatKhoVM.errorMessage = "Giá trị trả không hợp lệ"
+//            return
+//        }
+//        if tra > muon {
+//            xuatKhoVM.errorMessage = "Giá trị trả không hợp lệ. Không được trả quá số lượng mượn"
+//            return
+//        }
         if(xuatKhoVM.TenNv == "Không tìm thấy thông tin" ||  xuatKhoVM.TenNv == "Không xác định" || xuatKhoVM.SDT == "Vui lòng nhập thủ công"){
             xuatKhoVM.errorMessage = "Thông tin nhân viên không hợp. Yêu cầu nhập lại!"
             return
