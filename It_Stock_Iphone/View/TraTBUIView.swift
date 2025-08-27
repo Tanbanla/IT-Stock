@@ -391,7 +391,10 @@ struct TraTBUIView: View {
             xuatKhoVM.errorMessage = "Số lượng trả không hợp lệ"
             return
         }
-        
+        if(xuatKhoVM.TenNv == "Không tìm thấy thông tin" ||  xuatKhoVM.TenNv == "Không xác định" || xuatKhoVM.SDT == "Vui lòng nhập thủ công"){
+            xuatKhoVM.errorMessage = "Thông tin nhân viên không hợp. Yêu cầu nhập lại!"
+            return
+        }
         isLoading = true
         // Call API or perform submission logic
         xuatKhoVM.TraStock(stock: selectKho, adid: userLogin?.chR_ADID ?? "" , item: item){_ in

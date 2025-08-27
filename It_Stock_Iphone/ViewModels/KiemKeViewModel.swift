@@ -87,7 +87,13 @@ class KiemKeViewModel: ObservableObject{
                 },
                 receiveValue: { [weak self] response in
                     if response.success {
-                        self?.data = response.data
+                        //self?.data = response.data
+                        if response.data == nil {
+                            self?.errorMessage = "Không tìm thấy dữ liệu phân loại trong kho đã chọn \(stockName)"
+                            completion(false)
+                        }else{
+                            self?.data = response.data
+                        }
                         //self?.isSuccess = true
                         completion(true)
                     } else {

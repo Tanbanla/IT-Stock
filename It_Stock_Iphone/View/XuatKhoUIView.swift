@@ -726,7 +726,7 @@ struct XuatKhoUIView: View {
                     self.isLoading = false
                     xuatKhoVM.IdGood = self.xuatKhoVM.data?.id ?? 0
                     xuatKhoVM.phanLoai = self.xuatKhoVM.data?.nvchR_ITEM_NAME ?? code
-                    xuatKhoVM.slTon = String((self.xuatKhoVM.data?.inT_QTY_OLD ?? 0) + (self.xuatKhoVM.data?.inT_QTY_OLD ?? 0))
+                    xuatKhoVM.slTon = String((self.xuatKhoVM.data?.inT_QTY_OLD ?? 0) + (self.xuatKhoVM.data?.inT_QTY_NEW ?? 0))
                     
                     searchText = self.xuatKhoVM.data?.nvchR_ITEM_NAME ?? code
                 }
@@ -793,7 +793,10 @@ struct XuatKhoUIView: View {
             xuatKhoVM.errorMessage = "Vui lòng nhập lý do xuất kho"
             return
         }
-        
+        if(xuatKhoVM.TenNv == "Không tìm thấy thông tin" ||  xuatKhoVM.TenNv == "Không xác định" || xuatKhoVM.SDT == "Vui lòng nhập thủ công"){
+            xuatKhoVM.errorMessage = "Thông tin nhân viên không hợp. Yêu cầu nhập lại!"
+            return
+        }
         isLoading = true
         // Call API or perform submission logic
         xuatKhoVM.MuonOrXuat(stock: selectKho, adid: userLogin?.chR_ADID ?? "", SectionAdid: userLogin?.chR_COST_CENTER ?? ""){_ in
