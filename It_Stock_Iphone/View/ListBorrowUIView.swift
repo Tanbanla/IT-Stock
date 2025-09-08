@@ -229,11 +229,11 @@ struct SearchBar1: View {
                      // Nút trả
                      Button(action: onReturn) {
                          Text("Trả")
-                             .font(.system(size: 14, weight: .bold))
+                             .font(.system(size: 16, weight: .bold))
                              .foregroundColor(.white)
                              .frame(maxWidth: .infinity, maxHeight: .infinity)
                      }
-                     .frame(height: 44)
+                     .frame(height: 55)
                      .background(Color.red)
                  }
                  .frame(width: 80)

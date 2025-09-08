@@ -198,7 +198,7 @@ struct KiemKeUIView: View {
                                 } label: {
                                     HStack {
                                         VStack(alignment: .leading, spacing: 4) {
-                                            Text(product.chR_CODE_GOODS)
+                                            Text(product.chR_CODE_GOODS ?? "")
                                                 .font(.system(size: 14, weight: .semibold))
                                                 .foregroundColor(.black)
                                             Text(product.nvchR_ITEM_NAME)
@@ -247,7 +247,7 @@ struct KiemKeUIView: View {
             filteredProducts = allProducts
         } else {
             filteredProducts = allProducts.filter { product in
-                product.chR_CODE_GOODS.localizedCaseInsensitiveContains(searchText) ||
+                (product.chR_CODE_GOODS ?? "").localizedCaseInsensitiveContains(searchText) ||
                 product.nvchR_ITEM_NAME.localizedCaseInsensitiveContains(searchText)
             }
         }
@@ -257,7 +257,7 @@ struct KiemKeUIView: View {
         showSuggestions = false
         
         // Cập nhật các thông tin khác
-        handleBarcodeScanned(code: "\(product.chR_CODE_GOODS)")
+        handleBarcodeScanned(code: "\(product.chR_CODE_GOODS ?? "")")
     }
     
     // MARK: - Loại Hàng Section

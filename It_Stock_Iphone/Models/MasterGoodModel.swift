@@ -33,7 +33,7 @@ struct MasterGoodData: Codable {
     let inT_FLAG_DELETE: Int
     let nvchR_DONVI_TINH: String
     let chR_SEC_CONTROL: String
-    let chR_CODE_GOODS: String
+    let chR_CODE_GOODS: String?
 }
 
 struct MasterGoodDataSL: Codable{
@@ -52,5 +52,5 @@ struct MasterGoodDataSL: Codable{
     let inT_FLAG_DELETE: Int
     let nvchR_DONVI_TINH: String
     let chR_SEC_CONTROL: String
-    let chR_CODE_GOODS: String
+    let chR_CODE_GOODS: String?
 }

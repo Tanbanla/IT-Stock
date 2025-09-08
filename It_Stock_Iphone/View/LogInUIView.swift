@@ -94,8 +94,9 @@ struct LogInUIView: View {
                         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                     }
             )
-            .fullScreenCover(isPresented: $showMainView) {
-                MainUIView(userLogin: $userlogin) //$viewModel.isLoggedIn
+            .fullScreenCover(isPresented:  $viewModel.isLoggedIn) {
+            
+                MainUIView(userLogin: $viewModel.currentUser) //$viewModel.isLoggedIn
             }
             .alert("Lỗi", isPresented: .constant(viewModel.errorMessage != nil)) {
                 Button("OK") {
@@ -104,14 +105,14 @@ struct LogInUIView: View {
             } message: {
                 Text(viewModel.errorMessage ?? "")
             }
-            .alert("Đăng nhập thành công",isPresented: $viewModel.isLoggedIn) {
-                Button("OK", role: .cancel) {
-                    userlogin = viewModel.currentUser
-                    showMainView = true
-                }
-            }message: {
-                Text("Xin chào \(viewModel.currentUser?.nvchR_NAME ?? "")")
-            }
+//            .alert("Đăng nhập thành công",isPresented: $viewModel.isLoggedIn) {
+//                Button("OK", role: .cancel) {
+//                    userlogin = viewModel.currentUser
+//                    showMainView = true
+//                }
+//            }message: {
+//                Text("Xin chào \(viewModel.currentUser?.nvchR_NAME ?? "")")
+//            }
         }.background(
             Image("background")
                 .resizable()

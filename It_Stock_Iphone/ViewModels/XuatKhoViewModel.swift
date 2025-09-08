@@ -28,7 +28,7 @@ class XuatKhoViewModel: ObservableObject {
     @Published var slTra = ""
     
     // Các lựa chọn
-    @Published var listLuaChon = ["Xuất kho","Cho mượn"]
+    @Published var listLuaChon = ["Xuất kho","Cho mượn","Chuyển kho"]
     @Published var ListLoaiHang = ["Hàng mới","Hàng tái sử dụng"]
     
     //  Các biến lưu dữ liệu API
@@ -230,7 +230,7 @@ class XuatKhoViewModel: ObservableObject {
     func MuonOrXuat(stock: String, adid: String, SectionAdid: String,completion: @escaping (Bool) -> Void) {
         isLoading = true
         errorMessage = nil
-        if loai == "Xuất kho"{
+        if loai == "Xuất kho" || loai == "Chuyển kho"{
             XuatStock(stock: stock, adid: adid, SectionAdid: SectionAdid) { success in
                 completion(success)
             }
@@ -262,7 +262,7 @@ class XuatKhoViewModel: ObservableObject {
             let xuat = convertDateFormat(from: NgayXuat)
             let tra = convertDateFormat(from: NgayTra)
             
-            let requesBody = BorrowData(iD_GOODS: IdGood, nvchR_ITEM_NAME: phanLoai, chR_KHO: stock, chR_KIND_IN_OUT: "L", chR_TYPE_GOODS: typeGood, inT_QTY_IN_OUT: Int(slXuat), inT_QTY_IN_STOCK: nil, dtM_DATE_IN_OUT: xuat, chR_PER_IT: adid, chR_SECT: SectionNv, chR_PER_SECT: TenNv, chR_CODE_PER_SECT: MaNv, nvchR_EQUIP_NAME: nil, nvchR_REASON_IN_OUT: LyDo, chR_USER_UPDATE: adid, chR_KHO_NHAN: khoNhan, vchR_BORROWER_PHONE_NUMBER: SDT, dtM_EXPECTED_RETURN_DATE: tra, id: nil, nvchR_RETURNER: nil, vchR_CODE_RETURNER: nil, vchR_RETURNER_PHONE_NUMBER: nil, inT_QUANTITY_RETURN: nil, dtM_RETURN_DATE: nil)
+            let requesBody = BorrowData(iD_GOODS: IdGood, nvchR_ITEM_NAME: phanLoai, chR_KHO: stock, chR_KIND_IN_OUT: "L", chR_TYPE_GOODS: typeGood, inT_QTY_IN_OUT: Int(slXuat), inT_QTY_IN_STOCK: nil, dtM_DATE_IN_OUT: xuat, chR_PER_IT: adid, chR_SECT: SectionNv, chR_PER_SECT: TenNv, chR_CODE_PER_SECT: MaNv, nvchR_EQUIP_NAME: nil, nvchR_REASON_IN_OUT: LyDo, chR_USER_UPDATE: adid, chR_KHO_NHAN: nil, vchR_BORROWER_PHONE_NUMBER: SDT, dtM_EXPECTED_RETURN_DATE: tra, id: nil, nvchR_RETURNER: nil, vchR_CODE_RETURNER: nil, vchR_RETURNER_PHONE_NUMBER: nil, inT_QUANTITY_RETURN: nil, dtM_RETURN_DATE: nil)
             var request = URLRequest(url: url)
             request.httpMethod = "POST"
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")

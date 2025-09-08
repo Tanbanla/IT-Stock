@@ -46,7 +46,9 @@ struct XuatKhoUIView: View {
                         phanLoaiSection
                         
                         // Kho nhận
-                        khoNhanSection
+                        if(xuatKhoVM.loai == "Chuyển kho"){
+                            khoNhanSection
+                        }
                         
                         // Loại hàng
                         loaiHangSection
@@ -56,12 +58,13 @@ struct XuatKhoUIView: View {
                         
                         // Ngày tháng
                         ngayThangSection
-                        
-                        // Thông tin nhân viên
-                        nhanVienSection
-                        
-                        // Lý do
-                        lyDoSection
+                        if(xuatKhoVM.loai != "Chuyển kho"){
+                            // Thông tin nhân viên
+                            nhanVienSection
+                            
+                            // Lý do
+                            lyDoSection
+                        }
                         
                         // Button Xác nhận
                         confirmButton
@@ -75,6 +78,12 @@ struct XuatKhoUIView: View {
                             UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                         }
                 )
+                .onAppear{
+                    let date = Date()
+                    let formatter = DateFormatter()
+                    formatter.dateFormat = "dd/MM/yyyy"
+                    xuatKhoVM.NgayTra = formatter.string(from: date)
+                }
             }
         }
         .alert("Lỗi", isPresented: .constant(xuatKhoVM.errorMessage != nil)) {
@@ -88,6 +97,7 @@ struct XuatKhoUIView: View {
             Button("OK") {
                 xuatKhoVM.ResetFrom()
                 searchText = ""
+                ScranEmployee = false
             }
         } message: {
             Text("Xuất thiết bị thành công")
@@ -244,7 +254,7 @@ struct XuatKhoUIView: View {
                                 } label: {
                                     HStack {
                                         VStack(alignment: .leading, spacing: 4) {
-                                            Text(product.chR_CODE_GOODS)
+                                            Text(product.chR_CODE_GOODS ?? "")
                                                 .font(.system(size: 14, weight: .semibold))
                                                 .foregroundColor(.black)
                                             Text(product.nvchR_ITEM_NAME)
@@ -293,14 +303,14 @@ struct XuatKhoUIView: View {
             filteredProducts = allProducts
         } else {
             filteredProducts = allProducts.filter { product in
-                product.chR_CODE_GOODS.localizedCaseInsensitiveContains(searchText) ||
+                (product.chR_CODE_GOODS ?? "").localizedCaseInsensitiveContains(searchText) ||
                 product.nvchR_ITEM_NAME.localizedCaseInsensitiveContains(searchText)
             }
         }
     }
     private func selectProduct(_ product: MasterGoodData) {
         // Cập nhật các thông tin khác
-        handleBarcodeScanned(code: product.chR_CODE_GOODS)
+        handleBarcodeScanned(code: product.chR_CODE_GOODS ?? "")
         showSuggestions = false
     }
     
@@ -317,10 +327,12 @@ struct XuatKhoUIView: View {
             }
             Menu {
                 ForEach(listKho ?? [], id: \.self.chR_STOCK_NAME) { khoNhan in
-                    Button {
-                        xuatKhoVM.khoNhan = khoNhan.chR_STOCK_NAME
-                    } label: {
-                        Text(khoNhan.chR_STOCK_NAME)
+                    if(khoNhan.chR_STOCK_NAME != selectKho){
+                        Button {
+                            xuatKhoVM.khoNhan = khoNhan.chR_STOCK_NAME
+                        } label: {
+                            Text(khoNhan.chR_STOCK_NAME)
+                        }
                     }
                 }
             } label: {
@@ -472,36 +484,38 @@ struct XuatKhoUIView: View {
             }.onAppear{
                 xuatKhoVM.NgayXuat = currentDate
             }
-            // Ngày dự trả
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(spacing: 4) {
-                    Text("Ngày trả")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(.blue)
-                    Text("*")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(.red)
-                }
-                Button(action: {
-                    showCanlender.toggle()
-                }) {
-                    Text("\(formattedDate)").frame(minWidth: 120, minHeight: 20)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 12)
-                        .background(Color.blue.opacity(0.08))
-                        .cornerRadius(10)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 10)
-                                .stroke(Color.blue.opacity(0.2), lineWidth: 1)
+            if(xuatKhoVM.loai == "Cho mượn"){
+                // Ngày dự trả
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(spacing: 4) {
+                        Text("Ngày trả")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.blue)
+                        Text("*")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.red)
+                    }
+                    Button(action: {
+                        showCanlender.toggle()
+                    }) {
+                        Text("\(formattedDate)").frame(minWidth: 120, minHeight: 20)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 12)
+                            .background(Color.blue.opacity(0.08))
+                            .cornerRadius(10)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(Color.blue.opacity(0.2), lineWidth: 1)
+                            )
+                    }
+                    .sheet(isPresented: $showCanlender) {
+                        CustomDatePickerSheet(
+                            selectedDate: $selectedDate,
+                            formattedDate: $formattedDate,
+                            isPresented: $showCanlender,
+                            NgayTra: $xuatKhoVM.NgayTra
                         )
-                }
-                .sheet(isPresented: $showCanlender) {
-                    CustomDatePickerSheet(
-                        selectedDate: $selectedDate,
-                        formattedDate: $formattedDate,
-                        isPresented: $showCanlender,
-                        NgayTra: $xuatKhoVM.NgayTra
-                    )
+                    }
                 }
             }
             Spacer()
@@ -716,11 +730,10 @@ struct XuatKhoUIView: View {
     private func handleBarcodeScanned(code: String) {
         // Handle barcode scanning logic
         if ScranEmployee{
-            //xuatKhoVM.MaNv = code
             xuatKhoVM.MaNv = code
             fetchEmployeeInfo(employeeID: code)
         }else{
-            //xuatKhoVM.phanLoai = code
+            xuatKhoVM.phanLoai = code
             xuatKhoVM.getPhanLoaiAPI(stockName: selectKho, code: code) {_ in 
                 DispatchQueue.main.async {
                     self.isLoading = false
@@ -731,6 +744,7 @@ struct XuatKhoUIView: View {
                     searchText = self.xuatKhoVM.data?.nvchR_ITEM_NAME ?? code
                 }
             }
+            ScranEmployee = false
         }
     }
     
@@ -768,34 +782,36 @@ struct XuatKhoUIView: View {
         }
 
         let total = ton - quantity
-        guard total > 0 else {
+        guard total >= 0 else {
             xuatKhoVM.errorMessage = "Số lượng xuất vượt quá số lượng tồn"
             return
         }
         xuatKhoVM.TongSl = total
-        guard !xuatKhoVM.SDT.isEmpty else {
-            xuatKhoVM.errorMessage = "Vui lòng nhập số điện thoại liên hệ"
-            return
-        }
         guard isNgayTraValid() else {
             xuatKhoVM.errorMessage = "Ngày trả không được vượt quá 3 tháng so với ngày xuất"
             return
         }
-        guard !xuatKhoVM.TenNv.isEmpty else {
-            xuatKhoVM.errorMessage = "Vui lòng không bỏ trống tên nhân viên"
-            return
-        }
-        guard !xuatKhoVM.MaNv.isEmpty else {
-            xuatKhoVM.errorMessage = "Yêu cầu nhập mã nhân viên"
-            return
-        }
-        guard !xuatKhoVM.LyDo.isEmpty else {
-            xuatKhoVM.errorMessage = "Vui lòng nhập lý do xuất kho"
-            return
-        }
-        if(xuatKhoVM.TenNv == "Không tìm thấy thông tin" ||  xuatKhoVM.TenNv == "Không xác định" || xuatKhoVM.SDT == "Vui lòng nhập thủ công"){
-            xuatKhoVM.errorMessage = "Thông tin nhân viên không hợp. Yêu cầu nhập lại!"
-            return
+        if(xuatKhoVM.loai != "Chuyển kho"){
+            guard !xuatKhoVM.TenNv.isEmpty else {
+                xuatKhoVM.errorMessage = "Vui lòng không bỏ trống tên nhân viên"
+                return
+            }
+            guard !xuatKhoVM.MaNv.isEmpty else {
+                xuatKhoVM.errorMessage = "Yêu cầu nhập mã nhân viên"
+                return
+            }
+            guard !xuatKhoVM.LyDo.isEmpty else {
+                xuatKhoVM.errorMessage = "Vui lòng nhập lý do xuất kho"
+                return
+            }
+            guard !xuatKhoVM.SDT.isEmpty else {
+                xuatKhoVM.errorMessage = "Vui lòng nhập số điện thoại liên hệ"
+                return
+            }
+            if(xuatKhoVM.TenNv == "Không tìm thấy thông tin" ||  xuatKhoVM.TenNv == "Không xác định" || xuatKhoVM.SDT == "Vui lòng nhập thủ công"){
+                xuatKhoVM.errorMessage = "Thông tin nhân viên không hợp. Yêu cầu nhập lại!"
+                return
+            }
         }
         isLoading = true
         // Call API or perform submission logic

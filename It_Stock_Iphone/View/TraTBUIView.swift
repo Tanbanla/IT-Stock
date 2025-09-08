@@ -16,7 +16,10 @@ struct TraTBUIView: View {
     
     @State private var showScran: Bool = false
     @State private var isLoading: Bool = false
-    
+    // Hiển thị lịch
+    @State private var formattedDate: String = ""
+    @State private var selectedDate = Date()
+    @State private var showCanlender: Bool = false
     //thong tin thiet bi tra
     let item: ListBorrowData?
     let selectKho: String
@@ -57,6 +60,12 @@ struct TraTBUIView: View {
                             UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                         }
                 )
+//                .onAppear{
+//                    let date = Date()
+//                    let formatter = DateFormatter()
+//                    formatter.dateFormat = "yyyy-MM-dd"
+//                    xuatKhoVM.NgayTra = formatter.string(from: date)
+//                }
             }
         }
         .alert("Lỗi", isPresented: .constant(xuatKhoVM.errorMessage != nil)) {
@@ -69,6 +78,7 @@ struct TraTBUIView: View {
         .alert("Thành công", isPresented: $xuatKhoVM.isSuccess) {
             Button("OK") {
                 xuatKhoVM.ResetFrom()
+                dismiss()
             }
         } message: {
             Text("Trả thiết bị thành công")
@@ -175,7 +185,7 @@ struct TraTBUIView: View {
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.blue)
                 
-                Text("\(xuatKhoVM.slTon)").frame(width: 120, alignment: .leading)
+                Text("\(xuatKhoVM.slTon)").frame(width: 80, alignment: .leading)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 12)
                     .background(Color.blue.opacity(0.08))
@@ -185,7 +195,22 @@ struct TraTBUIView: View {
                             .stroke(Color.blue.opacity(0.2), lineWidth: 1)
                     )
             }
-
+            // Số mượn
+            VStack(alignment: .leading, spacing: 8) {
+                Text("SL Mượn")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.blue)
+                
+                Text("\(item?.inT_QUANTITY_REMAINING ?? 0)").frame(width: 80, alignment: .leading)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 12)
+                    .background(Color.blue.opacity(0.08))
+                    .cornerRadius(10)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(Color.blue.opacity(0.2), lineWidth: 1)
+                    )
+            }
             // Số lượng xuất
             VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 4) {
@@ -197,7 +222,7 @@ struct TraTBUIView: View {
                         .foregroundColor(.red)
                 }
                 
-                TextField("0", text: $xuatKhoVM.slTra).frame(width: 120)
+                TextField("0", text: $xuatKhoVM.slTra).frame(width: 80)
                     .keyboardType(.numberPad)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 12)
@@ -225,20 +250,41 @@ struct TraTBUIView: View {
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(.red)
                 }
-                
-                Text(currentDate).frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 12)
-                    .background(Color.blue.opacity(0.08))
-                    .cornerRadius(10)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.blue.opacity(0.2), lineWidth: 1)
-                    ).onAppear{
+                Button{
+                    showCanlender.toggle()
+                }label: {
+                    Text("\(formattedDate)").frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 12)
+                        .background(Color.blue.opacity(0.08))
+                        .cornerRadius(10)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.blue.opacity(0.2), lineWidth: 1)
+                        )
+                }
+                .sheet(isPresented: $showCanlender) {
+                    CustomDatePickerSheet(
+                        selectedDate: $selectedDate,
+                        formattedDate: $formattedDate,
+                        isPresented: $showCanlender,
+                        NgayTra: $xuatKhoVM.NgayTra
+                    )
+                }
+//                Text(currentDate).frame(maxWidth: .infinity, alignment: .leading)
+//                    .padding(.horizontal, 12)
+//                    .padding(.vertical, 12)
+//                    .background(Color.blue.opacity(0.08))
+//                    .cornerRadius(10)
+//                    .overlay(
+//                        RoundedRectangle(cornerRadius: 10)
+//                            .stroke(Color.blue.opacity(0.2), lineWidth: 1)
+                    .onAppear{
                         let date = Date()
                         let formatter = DateFormatter()
-                        formatter.dateFormat = "yyyy-MM-dd"
+                        formatter.dateFormat = "dd/MM/yyyy"
                         xuatKhoVM.NgayTra = formatter.string(from: date)
+                        formattedDate = formatter.string(from: date)
                     }
             }
         }
@@ -337,7 +383,60 @@ struct TraTBUIView: View {
             }
         }
     }
-    
+    //MARK: - Custom select time
+    // Custom sheet view for date picker
+    struct CustomDatePickerSheet: View {
+        @Binding var selectedDate: Date
+        @Binding var formattedDate: String
+        @Binding var isPresented: Bool
+        @Binding var  NgayTra: String
+
+        var body: some View {
+            VStack {
+                // Title
+                Text("Chọn ngày trả")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .padding()
+
+                // DatePicker with GraphicalDatePickerStyle for a better appearance
+                DatePicker(
+                    "Select a date",
+                    selection: $selectedDate,
+                    displayedComponents: [.date]
+                )
+                .datePickerStyle(GraphicalDatePickerStyle())
+                .labelsHidden()
+                .padding()
+
+                // "Done" button
+                Button(action: {
+                    formattedDate = formatDate(selectedDate)
+                    isPresented = false
+                    NgayTra = formatDate(selectedDate)
+                }) {
+                    Text("Xong")
+                        .font(.headline)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                }
+                .padding()
+            }
+            .background(Color.white)
+            .cornerRadius(20)
+            .padding()
+        }
+
+        // Function to format the date as "yyyy-MM-dd"
+        private func formatDate(_ date: Date) -> String {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "dd/MM/yyyy"
+            return formatter.string(from: date)
+        }
+    }
     // MARK: - Confirm Button
     private var confirmButton: some View {
         Button {
@@ -391,14 +490,14 @@ struct TraTBUIView: View {
             xuatKhoVM.errorMessage = "Số lượng trả không hợp lệ"
             return
         }
-//        guard let muon = Int(xuatKhoVM.slTon) else {
-//            xuatKhoVM.errorMessage = "Giá trị trả không hợp lệ"
-//            return
-//        }
-//        if tra > muon {
-//            xuatKhoVM.errorMessage = "Giá trị trả không hợp lệ. Không được trả quá số lượng mượn"
-//            return
-//        }
+        guard let muon = (item?.inT_QUANTITY_REMAINING) else {
+            xuatKhoVM.errorMessage = "Giá trị trả không hợp lệ"
+            return
+        }
+        if tra > muon {
+            xuatKhoVM.errorMessage = "Giá trị trả không hợp lệ. Không được trả quá số lượng mượn"
+            return
+        }
         if(xuatKhoVM.TenNv == "Không tìm thấy thông tin" ||  xuatKhoVM.TenNv == "Không xác định" || xuatKhoVM.SDT == "Vui lòng nhập thủ công"){
             xuatKhoVM.errorMessage = "Thông tin nhân viên không hợp. Yêu cầu nhập lại!"
             return
@@ -409,7 +508,6 @@ struct TraTBUIView: View {
             DispatchQueue.main.async {
                 isLoading = false
                 xuatKhoVM.ResetFrom()
-                dismiss()
             }
         }
     }
