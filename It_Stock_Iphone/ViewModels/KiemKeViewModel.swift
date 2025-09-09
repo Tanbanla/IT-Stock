@@ -20,6 +20,8 @@ class KiemKeViewModel: ObservableObject{
     @Published var slKiemKe = ""
     @Published var slLech = "0"
     @Published var Lydo = ""
+    @Published var HangMoi = "0"
+    @Published var HangTaiSuDung = "0"
     
     @Published var isLoading: Bool = false
     @Published var isSuccess: Bool = false

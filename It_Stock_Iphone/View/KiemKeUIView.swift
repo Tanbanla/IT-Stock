@@ -246,7 +246,7 @@ struct KiemKeUIView: View {
             }
         }
     }
-
+    
     private func filterProducts() {
         if searchText.isEmpty {
             filteredProducts = allProducts
@@ -311,64 +311,100 @@ struct KiemKeUIView: View {
     
     // MARK: - Quantity Section
     private var quantitySection: some View {
-        HStack(spacing: 16) {
-            // Max Quantity
-            VStack(alignment: .center, spacing: 8) {
-                Text("SL Max")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.blue)
+        HStack{
+            HStack(spacing: 16) {
+                // Max Quantity
+                VStack(alignment: .center, spacing: 8) {
+                    Text("SL Max")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.blue)
+                    
+                    Text(kiemKeVM.slMax)
+                        .frame(minWidth: 50, minHeight: 22)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 12)
+                        .background(Color.blue.opacity(0.08))
+                        .cornerRadius(10)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.blue.opacity(0.2), lineWidth: 1)
+                        )
+                        .keyboardType(.numberPad)
+                }
                 
-                Text(kiemKeVM.slMax)
-                    .frame(minWidth: 50, minHeight: 22)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 12)
-                    .background(Color.blue.opacity(0.08))
-                    .cornerRadius(10)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.blue.opacity(0.2), lineWidth: 1)
-                    )
-                    .keyboardType(.numberPad)
+                // Min Quantity
+                VStack(alignment: .center, spacing: 8) {
+                    Text("SL Min")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.blue)
+                    
+                    Text(kiemKeVM.slMin)
+                        .frame(minWidth: 50, minHeight: 22)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 12)
+                        .background(Color.blue.opacity(0.08))
+                        .cornerRadius(10)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.blue.opacity(0.2), lineWidth: 1)
+                        )
+                        .keyboardType(.numberPad)
+                }
+                // Hàng mới
+                VStack(alignment: .center, spacing: 8) {
+                    Text("Hàng mới")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.blue)
+                    
+                    Text(kiemKeVM.HangMoi)
+                        .frame(minWidth: 50, minHeight: 22)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 12)
+                        .background(Color.blue.opacity(0.08))
+                        .cornerRadius(10)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.blue.opacity(0.2), lineWidth: 1)
+                        )
+                        .keyboardType(.numberPad)
+                }
+                // Hàng tái sử dụng
+                VStack(alignment: .center, spacing: 8) {
+                    Text("Hàng tái sử dụng")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.blue)
+                    
+                    Text(kiemKeVM.HangTaiSuDung)
+                        .frame(minWidth: 50, minHeight: 22)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 12)
+                        .background(Color.blue.opacity(0.08))
+                        .cornerRadius(10)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.blue.opacity(0.2), lineWidth: 1)
+                        )
+                        .keyboardType(.numberPad)
+                }
+                // Tồn kho
+//                VStack(alignment: .center, spacing: 8) {
+//                    Text("Tồn kho")
+//                        .font(.system(size: 14, weight: .semibold))
+//                        .foregroundColor(.blue)
+//                    
+//                    Text(kiemKeVM.slTon)
+//                        .frame(minWidth: 50, minHeight: 22)
+//                        .padding(.horizontal, 12)
+//                        .padding(.vertical, 12)
+//                        .background(Color.blue.opacity(0.08))
+//                        .cornerRadius(10)
+//                        .overlay(
+//                            RoundedRectangle(cornerRadius: 10)
+//                                .stroke(Color.blue.opacity(0.2), lineWidth: 1)
+//                        )
+//                        .keyboardType(.numberPad)
+//                }
             }
-            
-            // Min Quantity
-            VStack(alignment: .center, spacing: 8) {
-                Text("SL Min")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.blue)
-                
-                Text(kiemKeVM.slMin)
-                    .frame(minWidth: 50, minHeight: 22)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 12)
-                    .background(Color.blue.opacity(0.08))
-                    .cornerRadius(10)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.blue.opacity(0.2), lineWidth: 1)
-                    )
-                    .keyboardType(.numberPad)
-            }
-            
-            // Tồn kho
-            VStack(alignment: .center, spacing: 8) {
-                Text("Tồn kho")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.blue)
-                
-                Text(kiemKeVM.slTon)
-                    .frame(minWidth: 50, minHeight: 22)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 12)
-                    .background(Color.blue.opacity(0.08))
-                    .cornerRadius(10)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.blue.opacity(0.2), lineWidth: 1)
-                    )
-                    .keyboardType(.numberPad)
-            }
-            
             // Kiểm kê
             VStack(alignment: .center, spacing: 8) {
                 HStack(spacing: 2) {
@@ -432,7 +468,7 @@ struct KiemKeUIView: View {
         
         return lech != 0 ? Color.red.opacity(0.08) : Color.blue.opacity(0.08)
     }
-
+    
     private var borderColor: Color {
         let ton = Int(kiemKeVM.slTon) ?? 0
         let kiemKe = Int(kiemKeVM.slKiemKe) ?? 0
@@ -520,6 +556,8 @@ struct KiemKeUIView: View {
                 let old = Int(kiemKeVM.data?.inT_QTY_OLD ?? 0);
                 let new = Int(kiemKeVM.data?.inT_QTY_NEW ?? 0);
                 let total = old + new
+                kiemKeVM.HangMoi = String(new)
+                kiemKeVM.HangTaiSuDung = String(old)
                 kiemKeVM.slTon = String(total)
                 
                 searchText = kiemKeVM.data?.nvchR_ITEM_NAME ?? code
@@ -557,6 +595,4 @@ struct KiemKeUIView: View {
         }
     }
 }
-//#Preview {
-//    KiemKeUIView(selectKho: "BINV-F1")
-//}
+
