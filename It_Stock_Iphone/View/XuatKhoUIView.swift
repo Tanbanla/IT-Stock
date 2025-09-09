@@ -93,6 +93,13 @@ struct XuatKhoUIView: View {
         } message: {
             Text(xuatKhoVM.errorMessage ?? "")
         }
+        .alert("Lỗi", isPresented: .constant(masterGoodVM.errorMessage != nil)) {
+            Button("OK") {
+                masterGoodVM.errorMessage = nil
+            }
+        } message: {
+            Text(masterGoodVM.errorMessage ?? "")
+        }
         .alert("Thành công", isPresented: $xuatKhoVM.isSuccess) {
             Button("OK") {
                 xuatKhoVM.ResetFrom()
@@ -286,6 +293,11 @@ struct XuatKhoUIView: View {
                         RoundedRectangle(cornerRadius: 8)
                             .stroke(Color.gray.opacity(0.3), lineWidth: 1)
                     )
+                    .onAppear{
+                        if filteredProducts.count == 1 {
+                            selectProduct(filteredProducts[0])
+                        }
+                    }
                 }
             }
         }

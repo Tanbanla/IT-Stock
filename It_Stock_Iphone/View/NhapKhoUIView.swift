@@ -226,6 +226,11 @@ struct NhapKhoUIView: View {
                         RoundedRectangle(cornerRadius: 8)
                             .stroke(Color.gray.opacity(0.3), lineWidth: 1)
                     )
+                    .onAppear{
+                        if filteredProducts.count == 1 {
+                            selectProduct(filteredProducts[0])
+                        }
+                    }
                 }
             }
         }
