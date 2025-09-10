@@ -311,16 +311,16 @@ struct KiemKeUIView: View {
     
     // MARK: - Quantity Section
     private var quantitySection: some View {
-        HStack{
-            HStack(spacing: 16) {
+        VStack{
+            HStack {
                 // Max Quantity
                 VStack(alignment: .center, spacing: 8) {
                     Text("SL Max")
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(.system(size: 12, weight: .semibold))
                         .foregroundColor(.blue)
                     
                     Text(kiemKeVM.slMax)
-                        .frame(minWidth: 50, minHeight: 22)
+                        .frame(minWidth: 70, minHeight: 22)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 12)
                         .background(Color.blue.opacity(0.08))
@@ -335,11 +335,11 @@ struct KiemKeUIView: View {
                 // Min Quantity
                 VStack(alignment: .center, spacing: 8) {
                     Text("SL Min")
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(.system(size: 12, weight: .semibold))
                         .foregroundColor(.blue)
                     
                     Text(kiemKeVM.slMin)
-                        .frame(minWidth: 50, minHeight: 22)
+                        .frame(minWidth: 70, minHeight: 22)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 12)
                         .background(Color.blue.opacity(0.08))
@@ -353,11 +353,11 @@ struct KiemKeUIView: View {
                 // Hàng mới
                 VStack(alignment: .center, spacing: 8) {
                     Text("Hàng mới")
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(.system(size: 12, weight: .semibold))
                         .foregroundColor(.blue)
                     
                     Text(kiemKeVM.HangMoi)
-                        .frame(minWidth: 50, minHeight: 22)
+                        .frame(minWidth: 70, minHeight: 22)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 12)
                         .background(Color.blue.opacity(0.08))
@@ -370,12 +370,12 @@ struct KiemKeUIView: View {
                 }
                 // Hàng tái sử dụng
                 VStack(alignment: .center, spacing: 8) {
-                    Text("Hàng tái sử dụng")
-                        .font(.system(size: 14, weight: .semibold))
+                    Text("Hàng tái SD")
+                        .font(.system(size: 12, weight: .semibold))
                         .foregroundColor(.blue)
                     
                     Text(kiemKeVM.HangTaiSuDung)
-                        .frame(minWidth: 50, minHeight: 22)
+                        .frame(minWidth: 70, minHeight: 22)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 12)
                         .background(Color.blue.opacity(0.08))
@@ -414,6 +414,7 @@ struct KiemKeUIView: View {
                     Text("*")
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(.red)
+                    Spacer()
                 }
                 
                 TextField("0", text: $kiemKeVM.slKiemKe)
