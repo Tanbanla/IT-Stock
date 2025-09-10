@@ -18,8 +18,11 @@ class KiemKeViewModel: ObservableObject{
     @Published var slMin = ""
     @Published var slTon = ""
     @Published var slKiemKe = ""
+    @Published var slKiemKeM = ""
+    @Published var slLechM = "0"
     @Published var slLech = "0"
     @Published var Lydo = ""
+    @Published var LydoM = ""
     @Published var HangMoi = ""
     @Published var HangTaiSuDung = ""
     
@@ -132,7 +135,30 @@ class KiemKeViewModel: ObservableObject{
 //      "inT_STATUS_INVENT": 0
 //    }
     
-    // Kiểm Kê API
+    
+//    let requesBody = InventoryBody(
+//        id: nil,
+//        dtM_DATE_INVENT: NgayKiemKe,
+//        iD_GOODS: data?.id,
+//        nvchR_ITEM_NAME: data?.nvchR_ITEM_NAME,
+//        chR_KHO: stock,
+//        inT_QTY_STOCK_SUM: Int(slTon),
+//        inT_QTY_GOODS_NEW: data?.inT_QTY_NEW,
+//        inT_QTY_GOOD_NEW_INVENT: Int(slKiemKeM),
+//        inT_QTY_DIFF_NEW: Int(slLechM),
+//        nvchR_REASON_DIFF_NEW: LydoM,
+//        inT_QTY_GOODS_REUSE: data?.inT_QTY_OLD,
+//        inT_QTY_GOOD_REUSE_INVENT: Int(slKiemKe),
+//        inT_QTY_DIFF_REUSE: Int(slLech),
+//        nvchR_REASON_DIFF_REUSE: Lydo,
+//        dtM_DATE_UPDATE: NgayKiemKe,
+//        chR_USER_UPDATE: adid,
+//        chR_USER_START_INVENT: nil,
+//        chR_USER_SCLOSE_INVENT: nil,
+//        dtM_END_INVENT: nil,
+//        inT_STATUS_INVENT: 1
+//    )
+//    // Kiểm Kê API
     func InventoryStock(stock: String, adid: String,completion: @escaping (Bool) -> Void){
         isLoading = true
         errorMessage = nil
@@ -146,11 +172,76 @@ class KiemKeViewModel: ObservableObject{
         }
 
         var requesBody: InventoryBody
-        if LoaiHang == "Hàng mới" {
-            requesBody = InventoryBody(id: nil, dtM_DATE_INVENT: NgayKiemKe, iD_GOODS: data?.id, nvchR_ITEM_NAME: data?.nvchR_ITEM_NAME, chR_KHO: stock, inT_QTY_STOCK_SUM: Int(slTon), inT_QTY_GOODS_NEW: data?.inT_QTY_NEW, inT_QTY_GOOD_NEW_INVENT: Int(slKiemKe), inT_QTY_DIFF_NEW: Int(slLech), nvchR_REASON_DIFF_NEW: Lydo, inT_QTY_GOODS_REUSE: nil, inT_QTY_GOOD_REUSE_INVENT: nil, inT_QTY_DIFF_REUSE: nil, nvchR_REASON_DIFF_REUSE: nil, dtM_DATE_UPDATE: NgayKiemKe, chR_USER_UPDATE: adid, chR_USER_START_INVENT: nil, chR_USER_SCLOSE_INVENT: nil, dtM_END_INVENT: nil, inT_STATUS_INVENT: 1)
-        }else{
+//        if LoaiHang == "Hàng mới" {
+//            requesBody = InventoryBody(id: nil, dtM_DATE_INVENT: NgayKiemKe, iD_GOODS: data?.id, nvchR_ITEM_NAME: data?.nvchR_ITEM_NAME, chR_KHO: stock, inT_QTY_STOCK_SUM: Int(slTon), inT_QTY_GOODS_NEW: data?.inT_QTY_NEW, inT_QTY_GOOD_NEW_INVENT: Int(slKiemKeM), inT_QTY_DIFF_NEW: Int(slLechM), nvchR_REASON_DIFF_NEW: LydoM, inT_QTY_GOODS_REUSE: nil, inT_QTY_GOOD_REUSE_INVENT: nil, inT_QTY_DIFF_REUSE: nil, nvchR_REASON_DIFF_REUSE: nil, dtM_DATE_UPDATE: NgayKiemKe, chR_USER_UPDATE: adid, chR_USER_START_INVENT: nil, chR_USER_SCLOSE_INVENT: nil, dtM_END_INVENT: nil, inT_STATUS_INVENT: 1)
+//        }else{
             requesBody = InventoryBody(id: nil, dtM_DATE_INVENT: NgayKiemKe, iD_GOODS: data?.id, nvchR_ITEM_NAME: data?.nvchR_ITEM_NAME, chR_KHO: stock, inT_QTY_STOCK_SUM: Int(slTon), inT_QTY_GOODS_NEW: nil, inT_QTY_GOOD_NEW_INVENT:nil, inT_QTY_DIFF_NEW: nil, nvchR_REASON_DIFF_NEW: nil, inT_QTY_GOODS_REUSE: data?.inT_QTY_OLD, inT_QTY_GOOD_REUSE_INVENT: Int(slKiemKe), inT_QTY_DIFF_REUSE: Int(slLech), nvchR_REASON_DIFF_REUSE: Lydo, dtM_DATE_UPDATE: NgayKiemKe, chR_USER_UPDATE: adid, chR_USER_START_INVENT: nil, chR_USER_SCLOSE_INVENT: nil, dtM_END_INVENT: nil, inT_STATUS_INVENT: 1)
+//        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        do {
+            let jsonData = try JSONEncoder().encode(requesBody)
+            request.httpBody = jsonData
+        } catch {
+            errorMessage = "Error encoding JSON: \(error)"
+            isLoading = false
+            completion(false)
+            return
         }
+        URLSession.shared.dataTaskPublisher(for: request)
+            .tryMap { output in
+                guard let httpResponse = output.response as? HTTPURLResponse,
+                      (200...299).contains(httpResponse.statusCode) else {
+                    throw URLError(.badServerResponse)
+                }
+                return output.data
+            }
+            .decode(type: InventoryRespone.self, decoder: JSONDecoder())
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] completionResult in
+                self?.isLoading = false
+                switch completionResult {
+                case .failure(let error):
+                    self?.isSuccess = false
+                    self?.errorMessage = error.localizedDescription
+                    completion(false)
+                case .finished:
+                    break
+                }
+            } receiveValue: { [weak self] response in
+                if response.success {
+                    self?.isLoading = false
+                    //self?.isSuccess = true
+                    completion(false)
+                } else {
+                    self?.isSuccess = false
+                    self?.errorMessage = response.message ?? "Kiểm kê thất bại"
+                    completion(false)
+                }
+            }
+            .store(in: &cancellables)
+    }
+    func InventoryStockM(stock: String, adid: String,completion: @escaping (Bool) -> Void){
+        isLoading = true
+        errorMessage = nil
+        isSuccess = false
+        
+        guard let url = URL(string: ApiLink.shared.Inventory) else {
+            errorMessage = "URL không hợp lệ"
+            isLoading = false
+            completion(false)
+            return
+        }
+
+        var requesBody: InventoryBody
+//        if LoaiHang == "Hàng mới" {
+            requesBody = InventoryBody(id: nil, dtM_DATE_INVENT: NgayKiemKe, iD_GOODS: data?.id, nvchR_ITEM_NAME: data?.nvchR_ITEM_NAME, chR_KHO: stock, inT_QTY_STOCK_SUM: Int(slTon), inT_QTY_GOODS_NEW: data?.inT_QTY_NEW, inT_QTY_GOOD_NEW_INVENT: Int(slKiemKeM), inT_QTY_DIFF_NEW: Int(slLechM), nvchR_REASON_DIFF_NEW: LydoM, inT_QTY_GOODS_REUSE: nil, inT_QTY_GOOD_REUSE_INVENT: nil, inT_QTY_DIFF_REUSE: nil, nvchR_REASON_DIFF_REUSE: nil, dtM_DATE_UPDATE: NgayKiemKe, chR_USER_UPDATE: adid, chR_USER_START_INVENT: nil, chR_USER_SCLOSE_INVENT: nil, dtM_END_INVENT: nil, inT_STATUS_INVENT: 1)
+//        }else{
+//            requesBody = InventoryBody(id: nil, dtM_DATE_INVENT: NgayKiemKe, iD_GOODS: data?.id, nvchR_ITEM_NAME: data?.nvchR_ITEM_NAME, chR_KHO: stock, inT_QTY_STOCK_SUM: Int(slTon), inT_QTY_GOODS_NEW: nil, inT_QTY_GOOD_NEW_INVENT:nil, inT_QTY_DIFF_NEW: nil, nvchR_REASON_DIFF_NEW: nil, inT_QTY_GOODS_REUSE: data?.inT_QTY_OLD, inT_QTY_GOOD_REUSE_INVENT: Int(slKiemKe), inT_QTY_DIFF_REUSE: Int(slLech), nvchR_REASON_DIFF_REUSE: Lydo, dtM_DATE_UPDATE: NgayKiemKe, chR_USER_UPDATE: adid, chR_USER_START_INVENT: nil, chR_USER_SCLOSE_INVENT: nil, dtM_END_INVENT: nil, inT_STATUS_INVENT: 1)
+//        }
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -209,6 +300,10 @@ class KiemKeViewModel: ObservableObject{
         Lydo = ""
         HangMoi = ""
         HangTaiSuDung = ""
+        slKiemKeM = ""
+        slLechM = "0"
+        LydoM = ""
+        
         
         isLoading = false
         isSuccess = false

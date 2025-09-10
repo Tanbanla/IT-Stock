@@ -13,6 +13,7 @@ struct KiemKeUIView: View {
     @StateObject private var masterGoodVM = MasterGoodViewModel()
     @Binding var userLogin: UserData?
     @State private var lyDo: String = ""
+    @State private var lyDoM: String = ""
     @State private var showScran: Bool = false
     @Environment(\.dismiss) private var dismiss
     // cho phần tím kiềm
@@ -42,14 +43,12 @@ struct KiemKeUIView: View {
                         // Loại hàng
                         loaiHangSection
                         
-                        // Số lượng
+                        // Số lượng mới
+                        quantitySectionM
+                        
+                        // Số lượng tái sử dụng
                         quantitySection
                         
-                        // Chênh lệch
-                        chenhLechSection
-                        
-                        // Lý do
-                        lyDoSection
                         
                         // Button Xác nhận
                         confirmButton
@@ -78,6 +77,7 @@ struct KiemKeUIView: View {
             Button("OK") {
                 kiemKeVM.ResetFrom()
                 lyDo = ""
+                lyDoM = ""
                 searchText = ""
             }
         } message: {
@@ -309,47 +309,10 @@ struct KiemKeUIView: View {
         }
     }
     
-    // MARK: - Quantity Section
-    private var quantitySection: some View {
+    // MARK: - Quantity Section Mới
+    private var quantitySectionM: some View {
         VStack{
             HStack {
-                // Max Quantity
-                VStack(alignment: .center, spacing: 8) {
-                    Text("SL Max")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundColor(.blue)
-                    
-                    Text(kiemKeVM.slMax)
-                        .frame(minWidth: 70, minHeight: 22)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 12)
-                        .background(Color.blue.opacity(0.08))
-                        .cornerRadius(10)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 10)
-                                .stroke(Color.blue.opacity(0.2), lineWidth: 1)
-                        )
-                        .keyboardType(.numberPad)
-                }
-                
-                // Min Quantity
-                VStack(alignment: .center, spacing: 8) {
-                    Text("SL Min")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundColor(.blue)
-                    
-                    Text(kiemKeVM.slMin)
-                        .frame(minWidth: 70, minHeight: 22)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 12)
-                        .background(Color.blue.opacity(0.08))
-                        .cornerRadius(10)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 10)
-                                .stroke(Color.blue.opacity(0.2), lineWidth: 1)
-                        )
-                        .keyboardType(.numberPad)
-                }
                 // Hàng mới
                 VStack(alignment: .center, spacing: 8) {
                     Text("Hàng mới")
@@ -368,6 +331,104 @@ struct KiemKeUIView: View {
                         )
                         .keyboardType(.numberPad)
                 }
+                // Kiểm kê
+                VStack(alignment: .center, spacing: 8) {
+                    HStack(spacing: 2) {
+                        Text("Kiểm kê")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.blue)
+                        Text("*")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.red)
+                        Spacer()
+                    }
+                    
+                    TextField("0", text: $kiemKeVM.slKiemKeM)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 12)
+                        .background(Color.blue.opacity(0.08))
+                        .cornerRadius(10)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.blue.opacity(0.2), lineWidth: 1)
+                        )
+                        .keyboardType(.numberPad)
+                        .onChange(of: kiemKeVM.slKiemKeM) { newValue in
+                            let ton = Int(kiemKeVM.HangMoi) ?? 0
+                            let kiemKe = Int(newValue) ?? 0
+                            let lech = ton - kiemKe
+                            kiemKeVM.slLechM = String(lech)
+                        }
+                        .onAppear {
+                            let ton = Int(kiemKeVM.HangMoi) ?? 0
+                            let kiemKe = Int(kiemKeVM.slKiemKeM) ?? 0
+                            let lech = ton - kiemKe
+                            kiemKeVM.slLechM = String(lech)
+                        }
+                }
+                // chênh lệch hàng mới
+                VStack(alignment: .center, spacing: 8) {
+                    Text("Chênh lệch")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.blue)
+                    
+                    TextField("", text: $kiemKeVM.slLechM)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 14)
+                        .background(backgroundColorM)
+                        .cornerRadius(12)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(borderColorM, lineWidth: 1)
+                        )
+                        .disabled(true) // Read-only
+                }
+            }
+            // lý do
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 2) {
+                    Text("Lý do")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.blue)
+                    Text("*")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.red)
+                }
+                
+                TextEditor(text: $lyDoM)
+                    .frame(height: 120)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(Color.blue.opacity(0.08))
+                    .cornerRadius(12)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.blue.opacity(0.2), lineWidth: 1)
+                    )
+                    .overlay(
+                        Group {
+                            if lyDoM.isEmpty {
+                                Text("Nhập lý do kiểm kê...")
+                                    .foregroundColor(.gray)
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 12)
+                                    .allowsHitTesting(false)
+                            }
+                        }
+                    ).onAppear{
+                        kiemKeVM.LydoM = lyDoM
+                    }
+                    .onChange(of: lyDo) { newValue in
+                        kiemKeVM.LydoM = lyDoM
+                    }
+            }
+            
+        }
+    }
+    // MARK: - Quantity Section tái sử dụng
+    private var quantitySection: some View {
+        VStack{
+            HStack {
                 // Hàng tái sử dụng
                 VStack(alignment: .center, spacing: 8) {
                     Text("Hàng tái SD")
@@ -386,84 +447,118 @@ struct KiemKeUIView: View {
                         )
                         .keyboardType(.numberPad)
                 }
-                // Tồn kho
-//                VStack(alignment: .center, spacing: 8) {
-//                    Text("Tồn kho")
-//                        .font(.system(size: 14, weight: .semibold))
-//                        .foregroundColor(.blue)
-//                    
-//                    Text(kiemKeVM.slTon)
-//                        .frame(minWidth: 50, minHeight: 22)
-//                        .padding(.horizontal, 12)
-//                        .padding(.vertical, 12)
-//                        .background(Color.blue.opacity(0.08))
-//                        .cornerRadius(10)
-//                        .overlay(
-//                            RoundedRectangle(cornerRadius: 10)
-//                                .stroke(Color.blue.opacity(0.2), lineWidth: 1)
-//                        )
-//                        .keyboardType(.numberPad)
-//                }
+                // Kiểm kê
+                VStack(alignment: .center, spacing: 8) {
+                    HStack(spacing: 2) {
+                        Text("Kiểm kê")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.blue)
+                        Text("*")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.red)
+                        Spacer()
+                    }
+                    
+                    TextField("0", text: $kiemKeVM.slKiemKe)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 12)
+                        .background(Color.blue.opacity(0.08))
+                        .cornerRadius(10)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.blue.opacity(0.2), lineWidth: 1)
+                        )
+                        .keyboardType(.numberPad)
+                        .onChange(of: kiemKeVM.slKiemKe) { newValue in
+                            let ton = Int(kiemKeVM.HangTaiSuDung) ?? 0
+                            let kiemKe = Int(newValue) ?? 0
+                            let lech = ton - kiemKe
+                            kiemKeVM.slLech = String(lech)
+                        }
+                        .onAppear {
+                            let ton = Int(kiemKeVM.HangTaiSuDung) ?? 0
+                            let kiemKe = Int(kiemKeVM.slKiemKe) ?? 0
+                            let lech = ton - kiemKe
+                            kiemKeVM.slLech = String(lech)
+                        }
+                }
+                // chênh lệch hàng tái sử dụng
+                VStack(alignment: .center, spacing: 8) {
+                    Text("Chênh lệch")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.blue)
+                    
+                    TextField("", text: $kiemKeVM.slLech)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 14)
+                        .background(backgroundColor)
+                        .cornerRadius(12)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(borderColor, lineWidth: 1)
+                        )
+                        .disabled(true) // Read-only
+                }
             }
-            // Kiểm kê
-            VStack(alignment: .center, spacing: 8) {
+            // Lý do
+            VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 2) {
-                    Text("Kiểm kê")
-                        .font(.system(size: 14, weight: .semibold))
+                    Text("Lý do")
+                        .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(.blue)
                     Text("*")
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(.red)
-                    Spacer()
                 }
                 
-                TextField("0", text: $kiemKeVM.slKiemKe)
+                TextEditor(text: $lyDo)
+                    .frame(height: 120)
                     .padding(.horizontal, 12)
-                    .padding(.vertical, 12)
+                    .padding(.vertical, 8)
                     .background(Color.blue.opacity(0.08))
-                    .cornerRadius(10)
+                    .cornerRadius(12)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 10)
+                        RoundedRectangle(cornerRadius: 12)
                             .stroke(Color.blue.opacity(0.2), lineWidth: 1)
                     )
-                    .keyboardType(.numberPad)
-                    .onChange(of: kiemKeVM.slKiemKe) { newValue in
-                        let ton = Int(kiemKeVM.slTon) ?? 0
-                        let kiemKe = Int(newValue) ?? 0
-                        let lech = ton - kiemKe
-                        kiemKeVM.slLech = String(lech)
+                    .overlay(
+                        Group {
+                            if lyDo.isEmpty {
+                                Text("Nhập lý do kiểm kê...")
+                                    .foregroundColor(.gray)
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 12)
+                                    .allowsHitTesting(false)
+                            }
+                        }
+                    ).onAppear{
+                        kiemKeVM.Lydo = lyDo
                     }
-                    .onAppear {
-                        let ton = Int(kiemKeVM.slTon) ?? 0
-                        let kiemKe = Int(kiemKeVM.slKiemKe) ?? 0
-                        let lech = ton - kiemKe
-                        kiemKeVM.slLech = String(lech)
+                    .onChange(of: lyDo) { newValue in
+                        kiemKeVM.Lydo = lyDo
                     }
             }
         }
     }
-    
-    // MARK: - Chênh Lệch Section
-    private var chenhLechSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Chênh lệch")
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(.blue)
-            
-            TextField("", text: $kiemKeVM.slLech)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 14)
-                .background(backgroundColor)
-                .cornerRadius(12)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(borderColor, lineWidth: 1)
-                )
-                .disabled(true) // Read-only
-        }
+    // MARK: - Màu Chênh Lệch Section
+    private var backgroundColorM: Color {
+        let ton = Int(kiemKeVM.HangMoi) ?? 0
+        let kiemKe = Int(kiemKeVM.slKiemKeM) ?? 0
+        let lech = ton - kiemKe
+        
+        return lech != 0 ? Color.red.opacity(0.08) : Color.blue.opacity(0.08)
     }
+    
+    private var borderColorM: Color {
+        let ton = Int(kiemKeVM.HangMoi) ?? 0
+        let kiemKe = Int(kiemKeVM.slKiemKeM) ?? 0
+        let lech = ton - kiemKe
+        
+        return lech != 0 ? Color.red.opacity(0.3) : Color.blue.opacity(0.2)
+    }
+    // hàng tái sử dụng
     private var backgroundColor: Color {
-        let ton = Int(kiemKeVM.slTon) ?? 0
+        let ton = Int(kiemKeVM.HangTaiSuDung) ?? 0
         let kiemKe = Int(kiemKeVM.slKiemKe) ?? 0
         let lech = ton - kiemKe
         
@@ -471,51 +566,11 @@ struct KiemKeUIView: View {
     }
     
     private var borderColor: Color {
-        let ton = Int(kiemKeVM.slTon) ?? 0
+        let ton = Int(kiemKeVM.HangTaiSuDung) ?? 0
         let kiemKe = Int(kiemKeVM.slKiemKe) ?? 0
         let lech = ton - kiemKe
         
         return lech != 0 ? Color.red.opacity(0.3) : Color.blue.opacity(0.2)
-    }
-    // MARK: - Lý Do Section
-    private var lyDoSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 2) {
-                Text("Lý do")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.blue)
-                Text("*")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.red)
-            }
-            
-            TextEditor(text: $lyDo)
-                .frame(height: 120)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .background(Color.blue.opacity(0.08))
-                .cornerRadius(12)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.blue.opacity(0.2), lineWidth: 1)
-                )
-                .overlay(
-                    Group {
-                        if lyDo.isEmpty {
-                            Text("Nhập lý do kiểm kê...")
-                                .foregroundColor(.gray)
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 12)
-                                .allowsHitTesting(false)
-                        }
-                    }
-                ).onAppear{
-                    kiemKeVM.Lydo = lyDo
-                }
-                .onChange(of: lyDo) { newValue in
-                    kiemKeVM.Lydo = lyDo
-                }
-        }
     }
     
     // MARK: - Confirm Button
@@ -576,24 +631,41 @@ struct KiemKeUIView: View {
             kiemKeVM.errorMessage = "Vui lòng quét mã vạch sản phẩm"
             return
         }
-        
-        guard !lyDo.isEmpty else {
-            kiemKeVM.errorMessage = "Vui lòng nhập lý do kiểm kê"
-            return
+        if(kiemKeVM.slLech != "0"){
+            guard !lyDo.isEmpty else {
+                kiemKeVM.errorMessage = "Vui lòng nhập lý do kiểm kê cho hàng tái sử dụng"
+                return
+            }
         }
         
-        guard let quantity = Int(kiemKeVM.slKiemKe), quantity > 0 else {
-            kiemKeVM.errorMessage = "Số lượng xuất phải là số nguyên dương"
+        if(kiemKeVM.slLechM != "0"){
+            guard !lyDoM.isEmpty else {
+                kiemKeVM.errorMessage = "Vui lòng nhập lý do kiểm kê cho hàng mới"
+                return
+            }
+        }
+        
+        guard let quantity = Int(kiemKeVM.slKiemKe), quantity >= 0 else {
+            kiemKeVM.errorMessage = "Số lượng kiểm kê hàng tái sử dụng phải là số nguyên dương"
+            return
+        }
+        guard let quantityM = Int(kiemKeVM.slKiemKeM), quantityM >= 0 else {
+            kiemKeVM.errorMessage = "Số lượng kiểm kê hàng mới phải là số nguyên dương"
             return
         }
         kiemKeVM.isLoading = true
         // Call API or perform submission logic
         kiemKeVM.InventoryStock(stock: selectKho, adid: userLogin?.chR_ADID ?? "") { _ in
             DispatchQueue.main.async {
-                kiemKeVM.isLoading = false
+
+            }
+        }
+        kiemKeVM.InventoryStockM(stock: selectKho, adid: userLogin?.chR_ADID ?? "") { _ in
+            DispatchQueue.main.async {
                 
             }
         }
+
     }
 }
 
