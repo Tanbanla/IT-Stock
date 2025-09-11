@@ -96,7 +96,7 @@ struct HomeUIView: View {
     // MARK: - User Info Card
     private var userInfoCard: some View {
         HStack(spacing: 16) {
-            Image(isShowIcon ? "man" : "woman")
+            Image(userLogin?.chR_EMLPLOYEEID.first == "M" ? "man" : "woman")
                 .resizable()
                 .scaledToFill()
                 .frame(width: 60, height: 60)
@@ -105,13 +105,6 @@ struct HomeUIView: View {
                 .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
             
             VStack(alignment: .leading, spacing: 4) {
-//                Text(userDataManager.currentUser?.nvchR_NAME ?? "Không xác định")
-//                    .font(.system(size: 18, weight: .bold))
-//                    .foregroundColor(.primary)
-//                
-//                Text(userDataManager.currentUser?.chR_COST_CENTER ?? "Không xác định")
-//                    .font(.system(size: 14, weight: .medium))
-//                    .foregroundColor(.blue)
                 Text(userLogin?.nvchR_NAME ?? "Không xác định")
                     .font(.system(size: 18, weight: .bold))
                     .foregroundColor(.primary)

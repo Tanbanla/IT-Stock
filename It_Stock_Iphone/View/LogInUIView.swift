@@ -39,7 +39,7 @@ struct LogInUIView: View {
                         Spacer()
                     }
                     HStack{
-                        TextField("Nhập Adid", text: $viewModel.adid).onChange(of: viewModel.adid) { newValue in
+                        TextField("Nhập ADID", text: $viewModel.adid).onChange(of: viewModel.adid) { newValue in
                             let uppercasedValue = newValue.lowercased()
                             viewModel.adid = uppercasedValue
                             

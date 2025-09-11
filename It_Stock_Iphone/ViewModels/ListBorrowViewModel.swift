@@ -33,7 +33,7 @@ class ListBorrowViewModel: ObservableObject{
         
         let requestBody = BorrowListRequest(
             chR_SEC_CONTROL: section,
-            iS_SEARCH: false,
+            iS_SEARCH: false
         )
         
         var request = URLRequest(url: url)
