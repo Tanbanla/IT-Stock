@@ -40,15 +40,31 @@ struct KiemKeUIView: View {
                         // Phân loại (Barcode)
                         barcodeSection
                         
-                        // Loại hàng
-                        loaiHangSection
-                        
                         // Số lượng mới
-                        quantitySectionM
+                        Section(header:
+                                    VStack(spacing: 2){
+                            Text("Thông tin hàng mới").fontWeight(.bold).font(.system(size: 14))
+                                .foregroundStyle(.blue)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            HStack{}.frame(maxWidth: .infinity).frame(height: 1).background(Color.blue)
+                                        Spacer()
+                                    }
+                                ) {
+                            quantitySectionM
+                        }
                         
                         // Số lượng tái sử dụng
-                        quantitySection
-                        
+                        Section(header:
+                                    VStack(spacing: 2){
+                            Text("Thông tin hàng tái sử dụng").fontWeight(.bold).font(.system(size: 14))
+                                .foregroundStyle(.blue)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            HStack{}.frame(maxWidth: .infinity).frame(height: 1).background(Color.blue)
+                                        Spacer()
+                                    }
+                                ) {
+                            quantitySection
+                        }
                         
                         // Button Xác nhận
                         confirmButton
@@ -265,62 +281,18 @@ struct KiemKeUIView: View {
         handleBarcodeScanned(code: "\(product.chR_CODE_GOODS ?? "")")
     }
     
-    // MARK: - Loại Hàng Section
-    private var loaiHangSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 2) {
-                Text("Loại hàng")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.blue)
-                Text("*")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.red)
-            }
-            
-            Menu {
-                ForEach(kiemKeVM.listLoaiHang, id: \.self) { loaiHang in
-                    Button {
-                        kiemKeVM.LoaiHang = loaiHang
-                    } label: {
-                        Text(loaiHang)
-                    }
-                }
-            } label: {
-                HStack {
-                    Text(kiemKeVM.LoaiHang.isEmpty ? "Chọn loại hàng" : kiemKeVM.LoaiHang)
-                        .font(.system(size: 16))
-                        .foregroundColor(kiemKeVM.LoaiHang.isEmpty ? .gray : .primary)
-                    
-                    Spacer()
-                    
-                    Image(systemName: "chevron.down")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(.blue)
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 14)
-                .background(Color.blue.opacity(0.08))
-                .cornerRadius(12)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.blue.opacity(0.2), lineWidth: 1)
-                )
-            }
-        }
-    }
-    
     // MARK: - Quantity Section Mới
     private var quantitySectionM: some View {
         VStack{
-            HStack {
+            HStack(spacing: 8) {
                 // Hàng mới
                 VStack(alignment: .center, spacing: 8) {
                     Text("Hàng mới")
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(.blue)
                     
                     Text(kiemKeVM.HangMoi)
-                        .frame(minWidth: 70, minHeight: 22)
+                        .frame(minWidth: 90, minHeight: 25)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 12)
                         .background(Color.blue.opacity(0.08))
@@ -340,10 +312,10 @@ struct KiemKeUIView: View {
                         Text("*")
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundColor(.red)
-                        Spacer()
                     }
                     
                     TextField("0", text: $kiemKeVM.slKiemKeM)
+                        .frame(maxHeight: 25)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 12)
                         .background(Color.blue.opacity(0.08))
@@ -369,10 +341,11 @@ struct KiemKeUIView: View {
                 // chênh lệch hàng mới
                 VStack(alignment: .center, spacing: 8) {
                     Text("Chênh lệch")
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(.blue)
                     
                     TextField("", text: $kiemKeVM.slLechM)
+                        .frame(maxHeight: 25)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 14)
                         .background(backgroundColorM)
@@ -387,16 +360,16 @@ struct KiemKeUIView: View {
             // lý do
             VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 2) {
-                    Text("Lý do")
-                        .font(.system(size: 16, weight: .semibold))
+                    Text("Lý do lệch hàng mới")
+                        .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(.blue)
                     Text("*")
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(.red)
                 }
                 
                 TextEditor(text: $lyDoM)
-                    .frame(height: 120)
+                    .frame(height: 50)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
                     .background(Color.blue.opacity(0.08))
@@ -422,21 +395,21 @@ struct KiemKeUIView: View {
                         kiemKeVM.LydoM = lyDoM
                     }
             }
-            
+            Spacer()
         }
     }
     // MARK: - Quantity Section tái sử dụng
     private var quantitySection: some View {
         VStack{
-            HStack {
+            HStack(spacing: 8) {
                 // Hàng tái sử dụng
                 VStack(alignment: .center, spacing: 8) {
                     Text("Hàng tái SD")
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(.blue)
                     
                     Text(kiemKeVM.HangTaiSuDung)
-                        .frame(minWidth: 70, minHeight: 22)
+                        .frame(minWidth: 90, minHeight: 25)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 12)
                         .background(Color.blue.opacity(0.08))
@@ -456,10 +429,10 @@ struct KiemKeUIView: View {
                         Text("*")
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundColor(.red)
-                        Spacer()
                     }
                     
                     TextField("0", text: $kiemKeVM.slKiemKe)
+                        .frame(maxHeight: 25)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 12)
                         .background(Color.blue.opacity(0.08))
@@ -485,10 +458,11 @@ struct KiemKeUIView: View {
                 // chênh lệch hàng tái sử dụng
                 VStack(alignment: .center, spacing: 8) {
                     Text("Chênh lệch")
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(.blue)
                     
                     TextField("", text: $kiemKeVM.slLech)
+                        .frame(maxHeight: 25)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 14)
                         .background(backgroundColor)
@@ -503,8 +477,8 @@ struct KiemKeUIView: View {
             // Lý do
             VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 2) {
-                    Text("Lý do")
-                        .font(.system(size: 16, weight: .semibold))
+                    Text("Lý do lệch hàng tái sử dụng")
+                        .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(.blue)
                     Text("*")
                         .font(.system(size: 16, weight: .semibold))
@@ -512,7 +486,7 @@ struct KiemKeUIView: View {
                 }
                 
                 TextEditor(text: $lyDo)
-                    .frame(height: 120)
+                    .frame(height: 50)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
                     .background(Color.blue.opacity(0.08))
@@ -538,6 +512,7 @@ struct KiemKeUIView: View {
                         kiemKeVM.Lydo = lyDo
                     }
             }
+            Spacer()
         }
     }
     // MARK: - Màu Chênh Lệch Section
@@ -622,10 +597,6 @@ struct KiemKeUIView: View {
     }
     private func submitInv() {
         // Validation and submission logic
-        guard !kiemKeVM.LoaiHang.isEmpty else {
-            kiemKeVM.errorMessage = "Vui lòng chọn loại kiểm kê"
-            return
-        }
         
         guard !kiemKeVM.phanLoai.isEmpty else {
             kiemKeVM.errorMessage = "Vui lòng quét mã vạch sản phẩm"
@@ -657,15 +628,10 @@ struct KiemKeUIView: View {
         // Call API or perform submission logic
         kiemKeVM.InventoryStock(stock: selectKho, adid: userLogin?.chR_ADID ?? "") { _ in
             DispatchQueue.main.async {
-
-            }
-        }
-        kiemKeVM.InventoryStockM(stock: selectKho, adid: userLogin?.chR_ADID ?? "") { _ in
-            DispatchQueue.main.async {
                 
             }
         }
-
+        
     }
 }
 

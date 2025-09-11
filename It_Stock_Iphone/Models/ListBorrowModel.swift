@@ -25,7 +25,7 @@ struct ListBorrowData: Codable, Identifiable{
     let chR_PER_IT: String?
     let chR_PER_SECT: String?
     let chR_CODE_PER_SECT: String?
-    let chR_SEC: String?
+    let chR_SECT: String?
     let nvchR_REASON_IN_OUT: String?
     let chR_KHO: String?
     let chR_KIND_IN_OUT: String?

@@ -195,7 +195,7 @@ struct SearchBar1: View {
                          InfoRow(label: "Ngày xuất:", value: formatDateString(item.dtM_DATE_IN_OUT) ?? "")
                          InfoRow(label: "Tên NV:", value: item.chR_PER_SECT ?? "N/A")
                          InfoRow(label: "Mã NV:", value: item.chR_CODE_PER_SECT ?? "N/A")
-                         InfoRow(label: "Phòng ban:", value: item.chR_SEC ?? "Không xác định")
+                         InfoRow(label: "Phòng ban:", value: item.chR_SECT ?? "Không xác định")
                          InfoRow(label: "Kho:", value: item.chR_KHO ?? "N/A")
                          
                          if let reason = item.nvchR_REASON_IN_OUT, !reason.isEmpty {

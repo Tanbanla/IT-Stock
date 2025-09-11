@@ -386,13 +386,8 @@ class XuatKhoViewModel: ObservableObject {
             completion(false)
             return
         }
-        var typeGood = ""
-        if LoaiHang == "Hàng mới" {
-            typeGood = "N"
-        }else{
-            typeGood = "R"
-        }// Cần xác nhận vchR_BORROW_CODE
-        let requesBody = BorrowData(iD_GOODS: Int(item?.iD_GOODS ?? "0"), nvchR_ITEM_NAME: phanLoai, chR_KHO: item?.chR_KHO, chR_KIND_IN_OUT: "R", chR_TYPE_GOODS: typeGood, inT_QTY_IN_OUT: item?.inT_QTY_IN_OUT, inT_QTY_IN_STOCK: item?.inT_QTY_IN_STOCK, dtM_DATE_IN_OUT: item?.dtM_DATE_IN_OUT, chR_PER_IT: item?.chR_PER_IT, chR_SECT: item?.chR_SEC, chR_PER_SECT: item?.chR_PER_SECT, chR_CODE_PER_SECT: item?.chR_CODE_PER_SECT, nvchR_EQUIP_NAME: nil, nvchR_REASON_IN_OUT: LyDo, chR_USER_UPDATE: adid, chR_KHO_NHAN: khoNhan, vchR_BORROWER_PHONE_NUMBER: item?.vchR_BORROWER_PHONE_NUMBER, dtM_EXPECTED_RETURN_DATE: item?.dtM_EXPECTED_RETURN_DATE, id: item?.id, nvchR_RETURNER: TenNv, vchR_CODE_RETURNER: MaNv, vchR_RETURNER_PHONE_NUMBER: SDT, inT_QUANTITY_RETURN: Int(slTra), dtM_RETURN_DATE: NgayTra)
+        var typeGood = "R"
+        let requesBody = BorrowData(iD_GOODS: Int(item?.iD_GOODS ?? "0"), nvchR_ITEM_NAME: phanLoai, chR_KHO: item?.chR_KHO, chR_KIND_IN_OUT: "R", chR_TYPE_GOODS: typeGood, inT_QTY_IN_OUT: item?.inT_QTY_IN_OUT, inT_QTY_IN_STOCK: item?.inT_QTY_IN_STOCK, dtM_DATE_IN_OUT: item?.dtM_DATE_IN_OUT, chR_PER_IT: item?.chR_PER_IT, chR_SECT: item?.chR_SECT, chR_PER_SECT: item?.chR_PER_SECT, chR_CODE_PER_SECT: item?.chR_CODE_PER_SECT, nvchR_EQUIP_NAME: nil, nvchR_REASON_IN_OUT: LyDo, chR_USER_UPDATE: adid, chR_KHO_NHAN: khoNhan, vchR_BORROWER_PHONE_NUMBER: item?.vchR_BORROWER_PHONE_NUMBER, dtM_EXPECTED_RETURN_DATE: item?.dtM_EXPECTED_RETURN_DATE, id: item?.id, nvchR_RETURNER: TenNv, vchR_CODE_RETURNER: MaNv, vchR_RETURNER_PHONE_NUMBER: SDT, inT_QUANTITY_RETURN: Int(slTra), dtM_RETURN_DATE: convertDateFormat(from: NgayTra))
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")

@@ -32,11 +32,8 @@ class ListBorrowViewModel: ObservableObject{
         }
         
         let requestBody = BorrowListRequest(
-            chR_KHO: "ALL",
             chR_SEC_CONTROL: section,
             iS_SEARCH: false,
-            date_From: "1753-01-01",
-            date_To: "9998-12-31"
         )
         
         var request = URLRequest(url: url)
