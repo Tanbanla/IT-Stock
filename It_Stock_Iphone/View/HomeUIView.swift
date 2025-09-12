@@ -87,6 +87,7 @@ struct HomeUIView: View {
                     .foregroundColor(.white)
                     .frame(width: 44, height: 44)
                     .background(Color.blue)
+   
                     .clipShape(Circle())
                     .shadow(color: Color.blue.opacity(0.3), radius: 5, x: 0, y: 3)
             }
@@ -96,7 +97,7 @@ struct HomeUIView: View {
     // MARK: - User Info Card
     private var userInfoCard: some View {
         HStack(spacing: 16) {
-            Image(userLogin?.chR_EMLPLOYEEID.first == "M" ? "man" : "woman")
+            Image((userLogin?.chR_EMLPLOYEEID.first == "M" || userLogin?.chR_EMLPLOYEEID.first == "m") ? "man" : "woman")
                 .resizable()
                 .scaledToFill()
                 .frame(width: 60, height: 60)
