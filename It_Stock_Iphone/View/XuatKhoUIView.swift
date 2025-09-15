@@ -58,6 +58,11 @@ struct XuatKhoUIView: View {
                         
                         // Ngày tháng
                         ngayThangSection
+                        
+                        // số lượng xuất
+                        if(xuatKhoVM.loai == "Cho mượn"){
+                            SlXuatSection
+                        }
                         if(xuatKhoVM.loai != "Chuyển kho"){
                             // Thông tin nhân viên
                             nhanVienSection
@@ -427,13 +432,45 @@ struct XuatKhoUIView: View {
     // MARK: - So Luong Section
     private var soLuongSection: some View {
         HStack(spacing: 16) {
+            // Số luơng hàng mới
+            VStack(alignment: .leading, spacing: 8) {
+                Text("SL Hàng mới")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.blue)
+                
+                Text("\(xuatKhoVM.slHangM)").frame(width: 75, alignment: .leading)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 12)
+                    .background(Color.blue.opacity(0.08))
+                    .cornerRadius(10)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(Color.blue.opacity(0.2), lineWidth: 1)
+                    )
+            }
+            // Số luơng hàng cũ
+            VStack(alignment: .leading, spacing: 8) {
+                Text("SL Hàng cũ")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.blue)
+                
+                Text("\(xuatKhoVM.slHangC)").frame(width: 75, alignment: .leading)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 12)
+                    .background(Color.blue.opacity(0.08))
+                    .cornerRadius(10)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(Color.blue.opacity(0.2), lineWidth: 1)
+                    )
+            }
             // Số lượng tồn
             VStack(alignment: .leading, spacing: 8) {
                 Text("SL Tồn")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.blue)
                 
-                Text("\(xuatKhoVM.slTon)").frame(width: 120, alignment: .leading)
+                Text("\(xuatKhoVM.slTon)").frame(width: 75, alignment: .leading)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 12)
                     .background(Color.blue.opacity(0.08))
@@ -443,29 +480,28 @@ struct XuatKhoUIView: View {
                             .stroke(Color.blue.opacity(0.2), lineWidth: 1)
                     )
             }
-
             // Số lượng xuất
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(spacing: 4) {
-                    Text("SL Xuất")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(.blue)
-                    Text("*")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(.red)
-                }
-                
-                TextField("0", text: $xuatKhoVM.slXuat).frame(width: 120)
-                    .keyboardType(.numberPad)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 12)
-                    .background(Color.blue.opacity(0.08))
-                    .cornerRadius(10)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.blue.opacity(0.2), lineWidth: 1)
-                    )
-            }
+//            VStack(alignment: .leading, spacing: 8) {
+//                HStack(spacing: 4) {
+//                    Text("SL Xuất")
+//                        .font(.system(size: 14, weight: .semibold))
+//                        .foregroundColor(.blue)
+//                    Text("*")
+//                        .font(.system(size: 14, weight: .semibold))
+//                        .foregroundColor(.red)
+//                }
+//                
+//                TextField("0", text: $xuatKhoVM.slXuat).frame(width: 120)
+//                    .keyboardType(.numberPad)
+//                    .padding(.horizontal, 12)
+//                    .padding(.vertical, 12)
+//                    .background(Color.blue.opacity(0.08))
+//                    .cornerRadius(10)
+//                    .overlay(
+//                        RoundedRectangle(cornerRadius: 10)
+//                            .stroke(Color.blue.opacity(0.2), lineWidth: 1)
+//                    )
+//            }
             Spacer()
         }
     }
@@ -529,11 +565,62 @@ struct XuatKhoUIView: View {
                         )
                     }
                 }
+            }else{
+               //  Số lượng xuất
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(spacing: 4) {
+                        Text("SL Xuất")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.blue)
+                        Text("*")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.red)
+                    }
+    
+                    TextField("0", text: $xuatKhoVM.slXuat).frame(width: 120)
+                        .keyboardType(.numberPad)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 12)
+                        .background(Color.blue.opacity(0.08))
+                        .cornerRadius(10)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.blue.opacity(0.2), lineWidth: 1)
+                        )
+                }
             }
             Spacer()
         }
     }
     
+    // MARK: - Số lượng xuất Section
+    private var SlXuatSection: some View {
+        HStack(spacing: 16) {
+               //  Số lượng xuất
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(spacing: 4) {
+                        Text("SL Xuất")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.blue)
+                        Text("*")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.red)
+                    }
+    
+                    TextField("0", text: $xuatKhoVM.slXuat).frame(width: 120)
+                        .keyboardType(.numberPad)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 12)
+                        .background(Color.blue.opacity(0.08))
+                        .cornerRadius(10)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.blue.opacity(0.2), lineWidth: 1)
+                        )
+                }
+            Spacer()
+        }
+    }
     // MARK: - Nhan Vien Section
     private var nhanVienSection: some View {
         VStack(spacing: 16) {
@@ -751,6 +838,9 @@ struct XuatKhoUIView: View {
                     self.isLoading = false
                     xuatKhoVM.IdGood = self.xuatKhoVM.data?.id ?? 0
                     xuatKhoVM.phanLoai = self.xuatKhoVM.data?.nvchR_ITEM_NAME ?? code
+                    xuatKhoVM.slHangC = String(self.xuatKhoVM.data?.inT_QTY_OLD ?? 0)
+                    xuatKhoVM.slHangM = String(self.xuatKhoVM.data?.inT_QTY_NEW ?? 0)
+                                               
                     xuatKhoVM.slTon = String((self.xuatKhoVM.data?.inT_QTY_OLD ?? 0) + (self.xuatKhoVM.data?.inT_QTY_NEW ?? 0))
                     
                     searchText = self.xuatKhoVM.data?.nvchR_ITEM_NAME ?? code
@@ -780,25 +870,41 @@ struct XuatKhoUIView: View {
         }
         
         guard !xuatKhoVM.LoaiHang.isEmpty else {
-            xuatKhoVM.errorMessage = "Vui lòng chọn kho nhận"
+            xuatKhoVM.errorMessage = "Vui lòng chọn loại hàng"
             return
         }
-        
-        guard let quantity = Int(xuatKhoVM.slXuat), quantity > 0 else {
-            xuatKhoVM.errorMessage = "Số lượng xuất phải là số nguyên dương"
-            return
-        }
-        guard let ton = Int(xuatKhoVM.slTon) else {
-            xuatKhoVM.errorMessage = "Giá trị nhập không hợp lệ"
-            return
+        if(xuatKhoVM.LoaiHang == "Hàng mới"){
+            guard let quantity = Int(xuatKhoVM.slXuat), quantity > 0 else {
+                xuatKhoVM.errorMessage = "Số lượng xuất phải là số nguyên dương"
+                return
+            }
+            guard let ton = Int(xuatKhoVM.slHangM) else {
+                xuatKhoVM.errorMessage = "Giá trị nhập không hợp lệ"
+                return
+            }
+            let total = ton - quantity
+            guard total > 0 else {
+                xuatKhoVM.errorMessage = "Số lượng xuất vượt quá số lượng hàng mới"
+                return
+            }
+            xuatKhoVM.TongSl = total
+        }else{
+            guard let quantity = Int(xuatKhoVM.slXuat), quantity > 0 else {
+                xuatKhoVM.errorMessage = "Số lượng xuất phải là số nguyên dương"
+                return
+            }
+            guard let ton = Int(xuatKhoVM.slHangC) else {
+                xuatKhoVM.errorMessage = "Giá trị nhập không hợp lệ"
+                return
+            }
+            let total = ton - quantity
+            guard total > 0 else {
+                xuatKhoVM.errorMessage = "Số lượng xuất vượt quá số lượng hàng cũ"
+                return
+            }
+            xuatKhoVM.TongSl = total
         }
 
-        let total = ton - quantity
-        guard total >= 0 else {
-            xuatKhoVM.errorMessage = "Số lượng xuất vượt quá số lượng tồn"
-            return
-        }
-        xuatKhoVM.TongSl = total
         guard isNgayTraValid() else {
             xuatKhoVM.errorMessage = "Ngày trả không được vượt quá 3 tháng so với ngày xuất"
             return
@@ -822,6 +928,12 @@ struct XuatKhoUIView: View {
             }
             if(xuatKhoVM.TenNv == "Không tìm thấy thông tin" ||  xuatKhoVM.TenNv == "Không xác định" || xuatKhoVM.SDT == "Vui lòng nhập thủ công"){
                 xuatKhoVM.errorMessage = "Thông tin nhân viên không hợp. Yêu cầu nhập lại!"
+                return
+            }
+        }
+        if(xuatKhoVM.loai == "Chuyển kho"){
+            guard !xuatKhoVM.khoNhan.isEmpty else {
+                xuatKhoVM.errorMessage = "Vui lòng chọn kho nhận"
                 return
             }
         }

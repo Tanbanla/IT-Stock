@@ -24,6 +24,8 @@ class XuatKhoViewModel: ObservableObject {
     @Published var LyDo = ""
     @Published var IdGood = 0
     @Published var TongSl = 0
+    @Published var slHangM = "0"
+    @Published var slHangC = "0"
     
     @Published var slTra = ""
     
@@ -464,6 +466,8 @@ class XuatKhoViewModel: ObservableObject {
         SectionNv = ""
         SDT = ""
         LyDo = ""
+        slHangM = "0"
+        slHangC = "0"
         
         //reset trả
         slTra=""
