@@ -12,8 +12,8 @@ struct KiemKeUIView: View {
     @StateObject private var kiemKeVM = KiemKeViewModel()
     @StateObject private var masterGoodVM = MasterGoodViewModel()
     @Binding var userLogin: UserData?
-    @State private var lyDo: String = ""
-    @State private var lyDoM: String = ""
+//    @State private var lyDo: String = ""
+//    @State private var lyDoM: String = ""
     @State private var showScran: Bool = false
     @Environment(\.dismiss) private var dismiss
     // cho phần tím kiềm
@@ -92,8 +92,8 @@ struct KiemKeUIView: View {
         .alert("Thành công", isPresented: $kiemKeVM.isSuccess) {
             Button("OK") {
                 kiemKeVM.ResetFrom()
-                lyDo = ""
-                lyDoM = ""
+//                lyDo = ""
+//                lyDoM = ""
                 searchText = ""
             }
         } message: {
@@ -368,7 +368,7 @@ struct KiemKeUIView: View {
                         .foregroundColor(.red)
                 }
                 
-                TextEditor(text: $lyDoM)
+                TextEditor(text: $kiemKeVM.LydoM)
                     .frame(height: 50)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
@@ -380,7 +380,7 @@ struct KiemKeUIView: View {
                     )
                     .overlay(
                         Group {
-                            if lyDoM.isEmpty {
+                            if kiemKeVM.LydoM.isEmpty {
                                 Text("Nhập lý do kiểm kê...")
                                     .foregroundColor(.gray)
                                     .padding(.horizontal, 16)
@@ -388,12 +388,13 @@ struct KiemKeUIView: View {
                                     .allowsHitTesting(false)
                             }
                         }
-                    ).onAppear{
-                        kiemKeVM.LydoM = lyDoM
-                    }
-                    .onChange(of: lyDo) { newValue in
-                        kiemKeVM.LydoM = lyDoM
-                    }
+                    )
+//                    .onAppear{
+//                        kiemKeVM.LydoM = lyDoM
+//                    }
+//                    .onChange(of: lyDo) { newValue in
+//                        kiemKeVM.LydoM = lyDoM
+//                    }
             }
             Spacer()
         }
@@ -485,7 +486,7 @@ struct KiemKeUIView: View {
                         .foregroundColor(.red)
                 }
                 
-                TextEditor(text: $lyDo)
+                TextEditor(text: $kiemKeVM.Lydo)
                     .frame(height: 50)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
@@ -497,7 +498,7 @@ struct KiemKeUIView: View {
                     )
                     .overlay(
                         Group {
-                            if lyDo.isEmpty {
+                            if kiemKeVM.Lydo.isEmpty {
                                 Text("Nhập lý do kiểm kê...")
                                     .foregroundColor(.gray)
                                     .padding(.horizontal, 16)
@@ -505,12 +506,13 @@ struct KiemKeUIView: View {
                                     .allowsHitTesting(false)
                             }
                         }
-                    ).onAppear{
-                        kiemKeVM.Lydo = lyDo
-                    }
-                    .onChange(of: lyDo) { newValue in
-                        kiemKeVM.Lydo = lyDo
-                    }
+                    )
+//                    .onAppear{
+//                        kiemKeVM.Lydo = lyDo
+//                    }
+//                    .onChange(of: lyDo) { newValue in
+//                        kiemKeVM.Lydo = lyDo
+//                    }
             }
             Spacer()
         }
@@ -603,14 +605,14 @@ struct KiemKeUIView: View {
             return
         }
         if(kiemKeVM.slLech != "0"){
-            guard !lyDo.isEmpty else {
+            guard !kiemKeVM.Lydo.isEmpty else {
                 kiemKeVM.errorMessage = "Vui lòng nhập lý do kiểm kê cho hàng tái sử dụng"
                 return
             }
         }
         
         if(kiemKeVM.slLechM != "0"){
-            guard !lyDoM.isEmpty else {
+            guard !kiemKeVM.LydoM.isEmpty else {
                 kiemKeVM.errorMessage = "Vui lòng nhập lý do kiểm kê cho hàng mới"
                 return
             }
